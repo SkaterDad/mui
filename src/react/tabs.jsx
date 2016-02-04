@@ -60,13 +60,16 @@ class Tabs extends React.Component {
   render() {
     let tabEls = [],
         paneEls = [],
-        children = this.props.children,
-        m = children.length,
         selectedIndex = this.state.currentSelectedIndex % m,
         isActive,
         item,
         cls,
-        i;
+        i,
+        m;
+
+    let { children, ...other } = this.props;
+
+    m = children.length;
 
     for (i=0; i < m; i++) {
       item = children[i];
@@ -100,7 +103,7 @@ class Tabs extends React.Component {
     if (this.props.justified) cls += ' ' + tabsBarJustifiedClass;
 
     return (
-      <div className={this.props.className} style={this.props.style}>
+      <div { ...other }>
         <ul className={cls}>
           {tabEls}
         </ul>
