@@ -1,5 +1,9 @@
 # MUI Changelog
 
+## 0.4.2 - February 3, 2016
+
+* Added support for other React attributes and events
+
 ## 0.4.1 - February 2, 2016
 
 * Added defaultValue and controlled component support to React TextInput and
