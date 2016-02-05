@@ -65,20 +65,18 @@ var Tabs = function (_React$Component) {
   }, {
     key: 'render',
     value: function render() {
-      var tabEls = [],
-          paneEls = [],
-          selectedIndex = this.state.currentSelectedIndex % m,
-          isActive = undefined,
-          item = undefined,
-          cls = undefined,
-          i = undefined,
-          m = undefined;
-
       var _props = this.props;
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['children']);
 
-      m = children.length;
+      var tabEls = [],
+          paneEls = [],
+          m = children.length,
+          selectedIndex = this.state.currentSelectedIndex % m,
+          isActive = undefined,
+          item = undefined,
+          cls = undefined,
+          i = undefined;
 
       for (i = 0; i < m; i++) {
         item = children[i];

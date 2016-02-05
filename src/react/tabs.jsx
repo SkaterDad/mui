@@ -58,18 +58,16 @@ class Tabs extends React.Component {
   }
 
   render() {
+    let { children, ...other } = this.props;
+
     let tabEls = [],
         paneEls = [],
+        m = children.length,
         selectedIndex = this.state.currentSelectedIndex % m,
         isActive,
         item,
         cls,
-        i,
-        m;
-
-    let { children, ...other } = this.props;
-
-    m = children.length;
+        i;
 
     for (i=0; i < m; i++) {
       item = children[i];
