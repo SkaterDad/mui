@@ -114,4 +114,20 @@ describe('react/input', function() {
     ReactUtils.Simulate.change(inputEl);
     assert.equal(instance.state.value, 'test3');
   });
+
+
+  it('supports change through setState()', function() {
+    let instance = ReactUtils.renderIntoDocument(
+      <Input defaultValue="value-1"></Input>
+    );
+    let inputEl = ReactUtils
+      .findRenderedDOMComponentWithTag(instance, 'input');
+    
+    // check default
+    assert.equal(inputEl.value, 'value-1');
+
+    // change and check
+    instance.setState({value: 'value-2'});
+    assert.equal(inputEl.value, 'value-2');
+  });
 });

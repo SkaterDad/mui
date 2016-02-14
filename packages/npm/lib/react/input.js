@@ -26,15 +26,30 @@ var PropTypes = _react2.default.PropTypes;
 var Input = function (_React$Component) {
   babelHelpers.inherits(Input, _React$Component);
 
-  function Input() {
+  function Input(props) {
     babelHelpers.classCallCheck(this, Input);
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Input).apply(this, arguments));
+
+    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Input).call(this, props));
+
+    _this.state = {
+      value: null
+    };
+
+    _this.state.value = _this.props.value;
+    return _this;
   }
 
   babelHelpers.createClass(Input, [{
+    key: 'componentWillReceiveProps',
+    value: function componentWillReceiveProps(nextProps) {
+      // update value from props to support .setState() on instance
+      var value = nextProps.value;
+      if (value !== null) this.setState({ value: value });
+    }
+  }, {
     key: 'render',
     value: function render() {
-      return _react2.default.createElement(_textField.TextField, this.props);
+      return _react2.default.createElement(_textField.TextField, babelHelpers.extends({}, this.props, { value: this.state.value }));
     }
   }]);
   return Input;

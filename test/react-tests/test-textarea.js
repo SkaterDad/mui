@@ -101,4 +101,20 @@ describe('react/textarea', function() {
     ReactUtils.Simulate.change(inputEl);
     assert.equal(instance.state.value, 'test3');
   });
+
+
+  it('supports change through setState()', function() {
+    let instance = ReactUtils.renderIntoDocument(
+      <Textarea defaultValue="value-1"></Textarea>
+    );
+    let textareaEl = ReactUtils
+      .findRenderedDOMComponentWithTag(instance, 'textarea');
+
+    // check default
+    assert.equal(textareaEl.value, 'value-1');
+
+    // change and check
+    instance.setState({value: 'value-2'});
+    assert.equal(textareaEl.value,'value-2');
+  });
 });

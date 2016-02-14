@@ -21588,6 +21588,7 @@ var Appbar = function (_React$Component) {
 
 /** Define module API */
 
+
 Appbar.defaultProps = {
   className: ''
 };
@@ -21617,6 +21618,7 @@ var jqLite = babelHelpers.interopRequireWildcard(_jqLite);
 var _util = require('../js/lib/util');
 
 var util = babelHelpers.interopRequireWildcard(_util);
+
 
 var rippleIter = 0;
 
@@ -21743,6 +21745,7 @@ var Button = function (_React$Component) {
  * @class
  */
 
+
 Button.propTypes = {
   color: PropTypes.oneOf(['default', 'primary', 'danger', 'dark', 'accent']),
   disabled: PropTypes.bool,
@@ -21809,6 +21812,7 @@ var Ripple = function (_React$Component2) {
 
 /** Define module API */
 
+
 Ripple.propTypes = {
   xPos: PropTypes.number,
   yPos: PropTypes.number,
@@ -21860,6 +21864,7 @@ var Caret = function (_React$Component) {
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['children']);
 
+
       return _react2.default.createElement('span', babelHelpers.extends({}, other, {
         className: 'mui-caret ' + this.props.className
       }));
@@ -21869,6 +21874,7 @@ var Caret = function (_React$Component) {
 }(_react2.default.Component);
 
 /** Define module API */
+
 
 Caret.defaultProps = {
   className: ''
@@ -21920,6 +21926,7 @@ var Checkbox = function (_React$Component) {
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['children']);
 
+
       return _react2.default.createElement(
         'div',
         babelHelpers.extends({}, other, {
@@ -21947,6 +21954,7 @@ var Checkbox = function (_React$Component) {
 }(_react2.default.Component);
 
 /** Define module API */
+
 
 Checkbox.propTypes = {
   name: PropTypes.string,
@@ -21989,6 +21997,7 @@ var _react2 = babelHelpers.interopRequireDefault(_react);
 var _util = require('../js/lib/util');
 
 var util = babelHelpers.interopRequireWildcard(_util);
+
 
 var breakpoints = ['xs', 'sm', 'md', 'lg', 'xl'];
 
@@ -22060,6 +22069,7 @@ var Col = function (_React$Component) {
 
 /** Define module API */
 
+
 exports.default = Col;
 module.exports = exports['default'];
 
@@ -22114,6 +22124,7 @@ var Container = function (_React$Component) {
 
 /** Define module API */
 
+
 Container.propTypes = {
   fluid: _react2.default.PropTypes.bool
 };
@@ -22160,6 +22171,7 @@ var Divider = function (_React$Component) {
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['children']);
 
+
       return _react2.default.createElement('div', babelHelpers.extends({}, other, {
         className: 'mui-divider ' + this.props.className
       }));
@@ -22169,6 +22181,7 @@ var Divider = function (_React$Component) {
 }(_react2.default.Component);
 
 /** Define module API */
+
 
 Divider.defaultProps = {
   className: ''
@@ -22197,6 +22210,7 @@ var _react2 = babelHelpers.interopRequireDefault(_react);
 var _util = require('../js/lib/util');
 
 var util = babelHelpers.interopRequireWildcard(_util);
+
 
 var PropTypes = _react2.default.PropTypes;
 
@@ -22229,6 +22243,7 @@ var DropdownItem = function (_React$Component) {
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['children']);
 
+
       return _react2.default.createElement(
         'li',
         other,
@@ -22244,6 +22259,7 @@ var DropdownItem = function (_React$Component) {
 }(_react2.default.Component);
 
 /** Define module API */
+
 
 DropdownItem.propTypes = {
   link: PropTypes.string,
@@ -22289,6 +22305,7 @@ var jqLite = babelHelpers.interopRequireWildcard(_jqLite);
 var _util = require('../js/lib/util');
 
 var util = babelHelpers.interopRequireWildcard(_util);
+
 
 var PropTypes = _react2.default.PropTypes,
     dropdownClass = 'mui-dropdown',
@@ -22428,6 +22445,7 @@ var Dropdown = function (_React$Component) {
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['ref', 'className', 'children']);
 
+
       return _react2.default.createElement(
         'div',
         babelHelpers.extends({}, other, {
@@ -22443,6 +22461,7 @@ var Dropdown = function (_React$Component) {
 }(_react2.default.Component);
 
 /** Define module API */
+
 
 Dropdown.propTypes = {
   color: PropTypes.oneOf(['default', 'primary', 'danger', 'dark', 'accent']),
@@ -22517,6 +22536,7 @@ var Form = function (_React$Component) {
 
 /** Define module API */
 
+
 Form.propTypes = {
   inline: _react2.default.PropTypes.bool
 };
@@ -22555,15 +22575,30 @@ var PropTypes = _react2.default.PropTypes;
 var Input = function (_React$Component) {
   babelHelpers.inherits(Input, _React$Component);
 
-  function Input() {
+  function Input(props) {
     babelHelpers.classCallCheck(this, Input);
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Input).apply(this, arguments));
+
+    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Input).call(this, props));
+
+    _this.state = {
+      value: null
+    };
+
+    _this.state.value = _this.props.value;
+    return _this;
   }
 
   babelHelpers.createClass(Input, [{
+    key: 'componentWillReceiveProps',
+    value: function componentWillReceiveProps(nextProps) {
+      // update value from props to support .setState() on instance
+      var value = nextProps.value;
+      if (value !== null) this.setState({ value: value });
+    }
+  }, {
     key: 'render',
     value: function render() {
-      return _react2.default.createElement(_textField.TextField, this.props);
+      return _react2.default.createElement(_textField.TextField, babelHelpers.extends({}, this.props, { value: this.state.value }));
     }
   }]);
   return Input;
@@ -22606,6 +22641,7 @@ var _util = require('../js/lib/util');
 
 var util = babelHelpers.interopRequireWildcard(_util);
 
+
 var PropTypes = _react2.default.PropTypes;
 
 /**
@@ -22628,6 +22664,7 @@ var Option = function (_React$Component) {
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['children']);
 
+
       return _react2.default.createElement(
         'option',
         babelHelpers.extends({}, other, { value: this.props.value }),
@@ -22639,6 +22676,7 @@ var Option = function (_React$Component) {
 }(_react2.default.Component);
 
 /** Define module API */
+
 
 Option.propTypes = {
   value: PropTypes.string,
@@ -22697,6 +22735,7 @@ var Panel = function (_React$Component) {
 
 /** Define module API */
 
+
 Panel.defaultProps = {
   className: ''
 };
@@ -22741,6 +22780,7 @@ var Radio = function (_React$Component) {
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['children']);
 
+
       return _react2.default.createElement(
         'div',
         babelHelpers.extends({}, other, {
@@ -22768,6 +22808,7 @@ var Radio = function (_React$Component) {
 }(_react2.default.Component);
 
 /** Define module API */
+
 
 Radio.propTypes = {
   name: PropTypes.string,
@@ -22811,6 +22852,7 @@ var _util = require('../js/lib/util');
 
 var util = babelHelpers.interopRequireWildcard(_util);
 
+
 var breakpoints = ['xs', 'sm', 'md', 'lg'];
 
 /**
@@ -22842,6 +22884,7 @@ var Row = function (_React$Component) {
 }(_react2.default.Component);
 
 /** Define module API */
+
 
 Row.defaultProps = {
   className: ''
@@ -22891,6 +22934,7 @@ var Select = function (_React$Component) {
 
   function Select(props) {
     babelHelpers.classCallCheck(this, Select);
+
 
     // warn if value defined but onChange is not
 
@@ -23074,6 +23118,7 @@ var Select = function (_React$Component) {
       var onChange = _props.onChange;
       var other = babelHelpers.objectWithoutProperties(_props, ['children', 'onChange']);
 
+
       return _react2.default.createElement(
         'div',
         babelHelpers.extends({}, other, {
@@ -23111,6 +23156,7 @@ var Select = function (_React$Component) {
  * Menu constructor
  * @class
  */
+
 
 Select.propTypes = {
   name: PropTypes.string,
@@ -23150,6 +23196,7 @@ var Menu = function (_React$Component2) {
       origIndex: null,
       currentIndex: null
     };
+
 
     _this3.onKeydownCB = util.callback(_this3, 'onKeydown');
     return _this3;
@@ -23285,6 +23332,7 @@ var Menu = function (_React$Component2) {
 
 /** Define module API */
 
+
 Menu.defaultProps = {
   optionEls: [],
   wrapperEl: null,
@@ -23338,6 +23386,7 @@ var Tab = function (_React$Component) {
 
 /** Define module API */
 
+
 Tab.propTypes = {
   value: PropTypes.any,
   label: PropTypes.string,
@@ -23376,6 +23425,7 @@ var _tab2 = babelHelpers.interopRequireDefault(_tab);
 var _util = require('../js/lib/util');
 
 var util = babelHelpers.interopRequireWildcard(_util);
+
 
 var PropTypes = _react2.default.PropTypes,
     tabsBarClass = 'mui-tabs__bar',
@@ -23421,6 +23471,7 @@ var Tabs = function (_React$Component) {
       var _props = this.props;
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['children']);
+
 
       var tabEls = [],
           paneEls = [],
@@ -23480,6 +23531,7 @@ var Tabs = function (_React$Component) {
 }(_react2.default.Component);
 
 /** Define module API */
+
 
 Tabs.propTypes = {
   initialSelectedIndex: PropTypes.number,
@@ -23595,6 +23647,7 @@ var Input = function (_React$Component) {
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['children']);
 
+
       if (this.props.type === 'textarea') {
         inputEl = _react2.default.createElement('textarea', babelHelpers.extends({}, other, {
           ref: 'inputEl',
@@ -23633,6 +23686,7 @@ var Input = function (_React$Component) {
  * Label constructor
  * @class
  */
+
 
 Input.propTypes = {
   hint: PropTypes.string,
@@ -23709,6 +23763,7 @@ var Label = function (_React$Component2) {
  * @class
  */
 
+
 Label.defaultProps = {
   text: '',
   onClick: null
@@ -23765,6 +23820,7 @@ var TextField = function (_React$Component3) {
 
 /** Define module API */
 
+
 TextField.propTypes = {
   label: PropTypes.string,
   floatingLabel: PropTypes.bool
@@ -23803,15 +23859,30 @@ var PropTypes = _react2.default.PropTypes;
 var Textarea = function (_React$Component) {
   babelHelpers.inherits(Textarea, _React$Component);
 
-  function Textarea() {
+  function Textarea(props) {
     babelHelpers.classCallCheck(this, Textarea);
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Textarea).apply(this, arguments));
+
+    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Textarea).call(this, props));
+
+    _this.state = {
+      value: null
+    };
+
+    _this.state.value = _this.props.value;
+    return _this;
   }
 
   babelHelpers.createClass(Textarea, [{
+    key: 'componentWillReceiveProps',
+    value: function componentWillReceiveProps(nextProps) {
+      // update value from props to support .setState() on instance
+      var value = nextProps.value;
+      if (value !== null) this.setState({ value: value });
+    }
+  }, {
     key: 'render',
     value: function render() {
-      return _react2.default.createElement(_textField.TextField, this.props);
+      return _react2.default.createElement(_textField.TextField, babelHelpers.extends({}, this.props, { value: this.state.value }));
     }
   }]);
   return Textarea;
@@ -24998,6 +25069,18 @@ describe('react/input', function () {
     _reactAddonsTestUtils2.default.Simulate.change(inputEl);
     _assert2.default.equal(instance.state.value, 'test3');
   });
+
+  it('supports change through setState()', function () {
+    var instance = _reactAddonsTestUtils2.default.renderIntoDocument(_react2.default.createElement(_input2.default, { defaultValue: 'value-1' }));
+    var inputEl = _reactAddonsTestUtils2.default.findRenderedDOMComponentWithTag(instance, 'input');
+
+    // check default
+    _assert2.default.equal(inputEl.value, 'value-1');
+
+    // change and check
+    instance.setState({ value: 'value-2' });
+    _assert2.default.equal(inputEl.value, 'value-2');
+  });
 });
 
 },{"../../src/react/input":184,"../lib/react-helpers":196,"assert":1,"react":165,"react-addons-test-utils":34,"react-dom":35}],207:[function(require,module,exports){
@@ -25622,6 +25705,18 @@ describe('react/textarea', function () {
     inputEl.value = 'test3';
     _reactAddonsTestUtils2.default.Simulate.change(inputEl);
     _assert2.default.equal(instance.state.value, 'test3');
+  });
+
+  it('supports change through setState()', function () {
+    var instance = _reactAddonsTestUtils2.default.renderIntoDocument(_react2.default.createElement(_textarea2.default, { defaultValue: 'value-1' }));
+    var textareaEl = _reactAddonsTestUtils2.default.findRenderedDOMComponentWithTag(instance, 'textarea');
+
+    // check default
+    _assert2.default.equal(textareaEl.value, 'value-1');
+
+    // change and check
+    instance.setState({ value: 'value-2' });
+    _assert2.default.equal(textareaEl.value, 'value-2');
   });
 });
 

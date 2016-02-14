@@ -44,6 +44,11 @@
       <div class="mui-panel">
         <div id="example-validation"></div>
       </div>
+      
+      <h2>Set State</h2>
+      <div class="mui-panel">
+        <div id="example-setstate"></div>
+      </div>
     </div>
     <script type="text/babel">
       let Button = mui.react.Button,
@@ -181,6 +186,27 @@
         </Form>,
         document.getElementById('example-validation')
       );
+
+      // setState example
+      class Example extends React.Component {
+        onClick() {
+          let value = Math.random().toString();
+          this.refs.refEl1.setState({ value });
+          this.refs.refEl2.setState({ value });
+        }
+
+        render() {
+          return (
+            <div>
+              <Input ref="refEl1" defaultValue="default-value"></Input>
+              <Textarea ref="refEl2" defaultValue="default-value"></Textarea>
+              <Button onClick={this.onClick.bind(this)}>click me</Button>
+            </div>
+          );
+        }
+      }
+     
+      ReactDOM.render(<Example />, document.getElementById('example-setstate'));
     </script>
   </body>
 </html>

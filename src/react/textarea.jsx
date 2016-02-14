@@ -18,6 +18,15 @@ const PropTypes = React.PropTypes;
  * @class
  */
 class Textarea extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state.value = this.props.value;
+  }
+
+  state= {
+    value: null
+  }
+
   static propTypes = {
     rows: PropTypes.number
   };
@@ -27,8 +36,14 @@ class Textarea extends React.Component {
     rows: 2
   };
 
+  componentWillReceiveProps(nextProps) {
+    // update value from props to support .setState() on instance
+    let value = nextProps.value;
+    if (value !== null) this.setState({ value });
+  }
+
   render() {
-    return <TextField { ...this.props } />;
+    return <TextField { ...this.props } value={this.state.value} />;
   }
 }
 
