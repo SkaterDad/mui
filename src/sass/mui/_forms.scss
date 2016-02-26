@@ -286,7 +286,9 @@ input[type="checkbox"]:disabled {
       display: inline-block;
       width: $mui-checkbox-size;
       height: $mui-checkbox-size;
-      border: 2px solid $mui-checkbox-border-color;
+      border-width: 2px;
+      border-style: solid;
+      border-color: $mui-checkbox-border-color;
       border-radius: 2px;
       position: absolute;
       left: 0px;
@@ -310,19 +312,24 @@ input[type="checkbox"]:disabled {
       transition: $mui-checkbox-transition;
     }
   }
-  &:disabled + span:before {
-    border-color: $mui-checkbox-disabled-color;
-  }
-  &:checked + span {
+  &:disabled + span {
     &:before {
-      border-color: $mui-checkbox-background-color;
-      background-color: $mui-checkbox-background-color;
+        border-color: $mui-checkbox-disabled-color;
     }
-
-    &:after {
-      transform: scale(1) rotate(-45deg);
-      opacity: 1;
-    }
+  }
+  &:checked {
+      &:not(:disabled) + span:before {
+        border-color: $mui-checkbox-background-color;
+        background-color: $mui-checkbox-background-color;
+      }
+      &:disabled + span:before {
+        border: none;
+        background-color: $mui-checkbox-disabled-color;
+      }
+      + span:after {
+        transform: scale(1) rotate(-45deg);
+        opacity: 1;
+      }
   }
 }
 
@@ -363,9 +370,6 @@ input[type="checkbox"]:disabled {
       transition: $mui-checkbox-transition;
     }
   }
-  &:disabled + span:before {
-    border-color: $mui-checkbox-disabled-color;
-  }
   &:checked + span {
     &:before {
       border-color: $mui-checkbox-background-color;
@@ -374,6 +378,14 @@ input[type="checkbox"]:disabled {
     &:after {
       transform: scale(0.8);
       opacity: 1;
+    }
+  }
+  &:disabled + span {
+    &:before {
+      border-color: $mui-checkbox-disabled-color;
+    }
+    &:after {
+      background-color: $mui-checkbox-disabled-color;
     }
   }
 }
@@ -409,8 +421,6 @@ $mui-toggle-total-space: $mui-toggle-track-width + $mui-toggle-margin-right;
     &:after {
       content: '';
       display: inline-block;
-      border-top: none;
-      border-right: none;
       opacity: 1;
       width: $mui-toggle-thumb-height;
       height: $mui-toggle-thumb-height;
@@ -424,12 +434,16 @@ $mui-toggle-total-space: $mui-toggle-track-width + $mui-toggle-margin-right;
       transition: $mui-toggle-transition;
     }
   }
-  &:disabled + span:before {
-    background-color: $mui-toggle-dis-track-color;
+  &:disabled + span {
+    &:before {
+      background-color: $mui-toggle-dis-track-color;
+    }
+    &:after {
+      background-color: $mui-toggle-dis-thumb-color;
+    }
   }
   &:checked + span {
     &:before {
-      border-color: $mui-toggle-on-track-color;
       background-color: $mui-toggle-on-track-color;
     }
 
