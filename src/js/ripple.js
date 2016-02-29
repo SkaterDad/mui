@@ -8,10 +8,37 @@
 
 var jqLite = require('./lib/jqLite'),
     util = require('./lib/util'),
+    addRippleClass = 'mui-add-ripple', //helper class with no styling
     btnClass = 'mui-btn',
-    btnFABClass = 'mui-btn--fab',
     rippleClass = 'mui-ripple-effect',
     animationName = 'mui-btn-inserted';
+
+/**
+ * Determine if element is an input and return props
+ * @param {Element} elem - The DOM element in question.
+ */
+function getInputElement(elem) {
+  var checkboxClasses = ['mui-checkbox', 'mui-checkbox--inline'],
+      radioClasses = ['mui-radio', 'mui-radio--inline'],
+      toggleClasses = ['mui-toggle'];
+
+  var inputProps = {}
+
+  if (jqLite.hasClass(elem, checkboxClasses)) {
+    inputProps.type = 'checkbox';
+  } else if (jqLite.hasClass(elem, radioClasses)) {
+    inputProps.type = 'radio';
+  } else if (jqLite.hasClass(elem, toggleClasses)) {
+    inputProps.type = 'toggle';
+  } else {
+    return null;
+  }
+
+  var inputEl = elem.getElementsByTagName('INPUT')[0];
+  inputProps.checked = (inputEl && inputEl.checked);
+
+  return inputProps;
+}
 
 
 /**
@@ -55,30 +82,60 @@ function eventHandler(ev) {
     }, 100);
   }
 
+  // create the ripple element
   var rippleEl = document.createElement('div');
-  rippleEl.className = rippleClass;
 
   var offset = jqLite.offset(buttonEl),
       xPos = ev.pageX - offset.left,
       yPos = ev.pageY - offset.top,
       diameter,
-      radius;
+      radius,
+      colorCls,
+      rippleTop,
+      rippleLeft;
 
-  // get height
-  if (jqLite.hasClass(buttonEl, btnFABClass)) diameter = offset.height / 2;
-  else diameter = offset.height;
+  // determine color of the ripple for
+  // true/false elements like checkboxes, radios, toggles
+  var maybeInputProps = getInputElement(buttonEl);
+  if (maybeInputProps === null) {
+    // not a true/false input, so calculate radius of the ripple based on its container size
+    radius = Math.max(buttonEl.clientWidth, buttonEl.clientHeight) * 1.3;
+    rippleTop = yPos - radius;
+    rippleLeft = xPos - radius;
+  } else {
+    //inputs are all about 20px tall
+    radius = 35;
+    // center the ripple on the input element
+    rippleTop = 10 - radius;
+    rippleLeft = 10 - radius;
+    // ripple color changes with 'checked' state
+    if (maybeInputProps.checked && maybeInputProps.type !== 'radio') {
+      colorCls = 'mui-ripple-effect--true';
+      // toggle switch ripple origin shifts
+      if (maybeInputProps.type === 'toggle') {
+        rippleTop = 10 - radius;
+        rippleLeft = 30 - radius;
+      }
+    } else {
+      colorCls = 'mui-ripple-effect--false';
+    }
+  }
 
-  radius = diameter / 2;
-  
+  // calculate diameter of ripple
+  diameter = radius * 2;
+
+  // add CSS classes to the ripple element
+  rippleEl.className = rippleClass + ' ' + colorCls;
+
   jqLite.css(rippleEl, {
     height: diameter + 'px',
     width: diameter + 'px',
-    top: yPos - radius + 'px',
-    left: xPos - radius + 'px'
+    top: rippleTop + 'px',
+    left: rippleLeft + 'px'
   });
 
   buttonEl.appendChild(rippleEl);
-  
+
   window.setTimeout(function() {
     var parentNode = rippleEl.parentNode;
     if (parentNode) parentNode.removeChild(rippleEl);
@@ -93,12 +150,15 @@ module.exports = {
     var doc = document;
 
     // markup elements available when method is called
-    var elList = doc.getElementsByClassName(btnClass);
+    var btnList = doc.getElementsByClassName(btnClass);
+    for (var i=btnList.length - 1; i >= 0; i--) initialize(btnList[i]);
+
+    var elList = doc.getElementsByClassName(addRippleClass);
     for (var i=elList.length - 1; i >= 0; i--) initialize(elList[i]);
 
     // listen for new elements
     util.onNodeInserted(function(el) {
-      if (jqLite.hasClass(el, btnClass)) initialize(el);
+      if (jqLite.hasClass(el, btnClass) || jqLite.hasClass(el, addRippleClass)) initialize(el);
     });
   }
 };

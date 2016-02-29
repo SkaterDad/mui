@@ -158,7 +158,10 @@ $mui-btn-flat-bg-color:               transparent !default;
 $mui-btn-flat-bg-color-hover:         darken(mui-color('white'), 5%) !default;
 $mui-btn-flat-ripple-color:           darken(mui-color('white'), 35%) !default;
 
+$mui-default-ripple-color:            mui-color('white') !default;
 
+$mui-ripple-input-true-color:         rgba(mui-color('black'), 0.65) !default;
+$mui-ripple-input-false-color:        $mui-accent-color !default;
 
 
 // ============================================================================
