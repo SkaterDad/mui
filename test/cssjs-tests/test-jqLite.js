@@ -4,7 +4,7 @@
  */
 
 var assert = require('assert');
-  
+
 var jqLite = require('../../src/js/lib/jqLite.js');
 
 
@@ -22,7 +22,7 @@ describe('js/lib/jqLite.js', function() {
       el = document.createElement('div');
     });
 
-    
+
     it('should add a class', function() {
       jqLite.addClass(el, 'my-class');
       assert.equal(jqLite.hasClass(el, 'my-class'), true);
@@ -42,6 +42,15 @@ describe('js/lib/jqLite.js', function() {
       assert.equal(el.className, 'my-class');
     });
 
+    it('should determine if element has a class from an array', function() {
+      jqLite.addClass(el, 'my-class1');
+      assert.equal(jqLite.hasClass(el, ['my-class', 'my-class1', 'my-class2']), true);
+    });
+
+    it('should determine if element does not have a class from an array', function() {
+      jqLite.addClass(el, 'my-class');
+      assert.equal(jqLite.hasClass(el, ['my-class1', 'my-class2', 'my-class3']), false);
+    });
 
     it('should remove all classes', function() {
       el.className = 'my-class my-class';
@@ -50,7 +59,7 @@ describe('js/lib/jqLite.js', function() {
     });
   });
 
-  
+
 
   // --------------------------------------------------------------------------
   // EVENT HANDLERS
@@ -64,7 +73,7 @@ describe('js/lib/jqLite.js', function() {
       event = require('synthetic-dom-events');
     });
 
-    
+
     beforeEach(function() {
       el = document.createElement('button');
       document.body.appendChild(el);  // for IE10
@@ -76,7 +85,7 @@ describe('js/lib/jqLite.js', function() {
     });
 
 
-    
+
     it('should attach a listener', function() {
       var isClicked = false;
       jqLite.on(el, 'click', function() {
@@ -93,11 +102,11 @@ describe('js/lib/jqLite.js', function() {
 
       var fn1 = function() {trigger1 = true;};
       var fn2 = function() {trigger2 = true;};
-      
+
       // add both
       jqLite.on(el, 'click', fn1);
       jqLite.on(el, 'click', fn2);
-      
+
       // remove one
       jqLite.off(el, 'click', fn2);
 
@@ -114,11 +123,11 @@ describe('js/lib/jqLite.js', function() {
 
       var fn1 = function() {trigger1 = true;};
       var fn2 = function() {trigger2 = true;};
-      
+
       // add both
       jqLite.on(el, 'click', fn1);
       jqLite.on(el, 'click', fn2);
-      
+
       // remove one
       jqLite.off(el, 'click');
 
@@ -132,7 +141,7 @@ describe('js/lib/jqLite.js', function() {
     it('should only trigger once', function() {
       var t = 0,
           fn = function() {t += 1;};
-      
+
       jqLite.one(el, 'click', fn);
 
       // trigger once
@@ -146,7 +155,7 @@ describe('js/lib/jqLite.js', function() {
   });
 
 
-  
+
   // --------------------------------------------------------------------------
   // CSS HELPER
   // --------------------------------------------------------------------------
@@ -203,7 +212,7 @@ describe('js/lib/jqLite.js', function() {
       el = document.createElement('div');
       document.body.appendChild(el);
     });
-    
+
 
     afterEach(function() {
       el.parentNode.removeChild(el);
