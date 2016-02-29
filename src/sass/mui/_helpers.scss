@@ -30,7 +30,7 @@
 // ============================================================================
 
 .mui-add-ripple {
-  //no styling.  class is used by JS to add ripple effect.
+  position: relative; // class is used by JS to add ripple effect.
 }
 
 
