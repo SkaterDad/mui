@@ -150,7 +150,7 @@ function jqLiteAddClass(element, cssClasses) {
       existingClasses += cssClass + ' ';
     }
   }
-  
+
   element.setAttribute('class', existingClasses.trim());
 }
 
@@ -202,11 +202,19 @@ function jqLiteCss(element, name, value) {
 /**
  * Check if element has class.
  * @param {Element} element - The DOM element.
- * @param {string} cls - The class name string.
+ * @param {string|Array} cls - The class name string or array.
  */
 function jqLiteHasClass(element, cls) {
   if (!cls || !element.getAttribute) return false;
-  return (_getExistingClasses(element).indexOf(' ' + cls + ' ') > -1);
+
+  var isArray = jqLiteType(cls) === 'array';
+  var clsArray = isArray ? cls : [cls];
+  for (var i=0; i < clsArray.length; i++) {
+    if (_getExistingClasses(element).indexOf(' ' + clsArray[i] + ' ') > -1) {
+      return true;
+    }
+  }
+  return false;
 }
 
 
@@ -224,7 +232,7 @@ function jqLiteType(somevar) {
     return typeStr.slice(8, -1).toLowerCase();
   } else {
     throw new Error("MUI: Could not understand type: " + typeStr);
-  }    
+  }
 }
 
 
@@ -274,7 +282,7 @@ function jqLiteOff(element, type, callback, useCapture) {
 
       // remove from cache
       argsList.splice(i, 1);
-      
+
       // remove from DOM
       element.removeEventListener(type, args[0], args[1]);
     }
@@ -420,7 +428,7 @@ function jqLiteRemoveClass(element, cssClasses) {
   var existingClasses = _getExistingClasses(element),
       splitClasses = cssClasses.split(' '),
       cssClass;
-  
+
   for (var i=0; i < splitClasses.length; i++) {
     cssClass = splitClasses[i].trim();
     while (existingClasses.indexOf(' ' + cssClass + ' ') >= 0) {

@@ -10,16 +10,17 @@
   border-radius: 50%;
   pointer-events: none;
   opacity: 0;
-  animation: mui-ripple-animation 2s;
+  background-color: $mui-default-ripple-color;
+  animation: mui-ripple-animation 1.5s cubic-bezier(0.08,0.57, 0.21, 0.97);
 }
 
 @keyframes mui-ripple-animation {
   from {
-    transform: scale(1);
+    transform: scale(0.001);
     opacity: 0.4;
   }
   to {
-    transform: scale(100);
+    transform: scale(1);
     opacity: 0;
   }
 }
@@ -52,4 +53,14 @@
 
 .mui-btn--flat > .mui-ripple-effect {
   background-color: $mui-btn-flat-ripple-color;
+}
+
+// ============================================================================
+// CHECKBOX, RADIO, & TOGGLE-SPECIFIC STYLES
+// ============================================================================
+.mui-ripple-effect--true {
+  background-color: $mui-ripple-input-true-color;
+}
+.mui-ripple-effect--false {
+  background-color: $mui-ripple-input-false-color;
 }

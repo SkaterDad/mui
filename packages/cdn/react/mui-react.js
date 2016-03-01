@@ -563,11 +563,19 @@ function jqLiteCss(element, name, value) {
 /**
  * Check if element has class.
  * @param {Element} element - The DOM element.
- * @param {string} cls - The class name string.
+ * @param {string|Array} cls - The class name string or array.
  */
 function jqLiteHasClass(element, cls) {
   if (!cls || !element.getAttribute) return false;
-  return _getExistingClasses(element).indexOf(' ' + cls + ' ') > -1;
+
+  var isArray = jqLiteType(cls) === 'array';
+  var clsArray = isArray ? cls : [cls];
+  for (var i = 0; i < clsArray.length; i++) {
+    if (_getExistingClasses(element).indexOf(' ' + clsArray[i] + ' ') > -1) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -1145,6 +1153,7 @@ var _util = require('../js/lib/util');
 
 var util = babelHelpers.interopRequireWildcard(_util);
 
+
 var rippleIter = 0;
 
 var PropTypes = _react2.default.PropTypes,
@@ -1270,6 +1279,7 @@ var Button = function (_React$Component) {
  * @class
  */
 
+
 Button.propTypes = {
   color: PropTypes.oneOf(['default', 'primary', 'danger', 'dark', 'accent']),
   disabled: PropTypes.bool,
@@ -1336,6 +1346,7 @@ var Ripple = function (_React$Component2) {
 
 /** Define module API */
 
+
 Ripple.propTypes = {
   xPos: PropTypes.number,
   yPos: PropTypes.number,
@@ -1351,7 +1362,7 @@ Ripple.defaultProps = {
 exports.default = Button;
 module.exports = exports['default'];
 
-},{"../js/lib/jqLite":4,"../js/lib/util":5,"react":"CwoHg3"}],8:[function(require,module,exports){
+},{"../js/lib/jqLite":4,"../js/lib/util":5,"react":"himR+j"}],8:[function(require,module,exports){
 /**
  * MUI React Caret Module
  * @module react/caret
@@ -1387,6 +1398,7 @@ var Caret = function (_React$Component) {
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['children']);
 
+
       return _react2.default.createElement('span', babelHelpers.extends({}, other, {
         className: 'mui-caret ' + this.props.className
       }));
@@ -1397,13 +1409,14 @@ var Caret = function (_React$Component) {
 
 /** Define module API */
 
+
 Caret.defaultProps = {
   className: ''
 };
 exports.default = Caret;
 module.exports = exports['default'];
 
-},{"react":"CwoHg3"}],9:[function(require,module,exports){
+},{"react":"himR+j"}],9:[function(require,module,exports){
 /**
  * MUI React tabs module
  * @module react/tabs
@@ -1447,6 +1460,7 @@ var Tab = function (_React$Component) {
 
 /** Define module API */
 
+
 Tab.propTypes = {
   value: PropTypes.any,
   label: PropTypes.string,
@@ -1460,7 +1474,7 @@ Tab.defaultProps = {
 exports.default = Tab;
 module.exports = exports['default'];
 
-},{"react":"CwoHg3"}],10:[function(require,module,exports){
+},{"react":"himR+j"}],10:[function(require,module,exports){
 /**
  * MUI React TextInput Component
  * @module react/text-input
@@ -1560,6 +1574,7 @@ var Input = function (_React$Component) {
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['children']);
 
+
       if (this.props.type === 'textarea') {
         inputEl = _react2.default.createElement('textarea', babelHelpers.extends({}, other, {
           ref: 'inputEl',
@@ -1598,6 +1613,7 @@ var Input = function (_React$Component) {
  * Label constructor
  * @class
  */
+
 
 Input.propTypes = {
   hint: PropTypes.string,
@@ -1674,6 +1690,7 @@ var Label = function (_React$Component2) {
  * @class
  */
 
+
 Label.defaultProps = {
   text: '',
   onClick: null
@@ -1730,6 +1747,7 @@ var TextField = function (_React$Component3) {
 
 /** Define module API */
 
+
 TextField.propTypes = {
   label: PropTypes.string,
   floatingLabel: PropTypes.bool
@@ -1740,7 +1758,7 @@ TextField.defaultProps = {
 };
 exports.TextField = TextField;
 
-},{"../js/lib/util":5,"./_helpers":6,"react":"CwoHg3"}],11:[function(require,module,exports){
+},{"../js/lib/util":5,"./_helpers":6,"react":"himR+j"}],11:[function(require,module,exports){
 /**
  * MUI React Appbar Module
  * @module react/appbar
@@ -1786,17 +1804,18 @@ var Appbar = function (_React$Component) {
 
 /** Define module API */
 
+
 Appbar.defaultProps = {
   className: ''
 };
 exports.default = Appbar;
 module.exports = exports['default'];
 
-},{"react":"CwoHg3"}],12:[function(require,module,exports){
+},{"react":"himR+j"}],12:[function(require,module,exports){
 module.exports=require(7)
-},{"../js/lib/jqLite":4,"../js/lib/util":5,"react":"CwoHg3"}],13:[function(require,module,exports){
+},{"../js/lib/jqLite":4,"../js/lib/util":5,"react":"himR+j"}],13:[function(require,module,exports){
 module.exports=require(8)
-},{"react":"CwoHg3"}],14:[function(require,module,exports){
+},{"react":"himR+j"}],14:[function(require,module,exports){
 /**
  * MUI React checkbox module
  * @module react/checkbox
@@ -1840,6 +1859,7 @@ var Checkbox = function (_React$Component) {
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['children']);
 
+
       return _react2.default.createElement(
         'div',
         babelHelpers.extends({}, other, {
@@ -1868,6 +1888,7 @@ var Checkbox = function (_React$Component) {
 
 /** Define module API */
 
+
 Checkbox.propTypes = {
   name: PropTypes.string,
   label: PropTypes.string,
@@ -1890,7 +1911,7 @@ Checkbox.defaultProps = {
 exports.default = Checkbox;
 module.exports = exports['default'];
 
-},{"../js/lib/util":5,"./_helpers":6,"react":"CwoHg3"}],15:[function(require,module,exports){
+},{"../js/lib/util":5,"./_helpers":6,"react":"himR+j"}],15:[function(require,module,exports){
 /**
  * MUI React Col Component
  * @module react/col
@@ -1909,6 +1930,7 @@ var _react2 = babelHelpers.interopRequireDefault(_react);
 var _util = require('../js/lib/util');
 
 var util = babelHelpers.interopRequireWildcard(_util);
+
 
 var breakpoints = ['xs', 'sm', 'md', 'lg', 'xl'];
 
@@ -1980,10 +2002,11 @@ var Col = function (_React$Component) {
 
 /** Define module API */
 
+
 exports.default = Col;
 module.exports = exports['default'];
 
-},{"../js/lib/util":5,"react":"CwoHg3"}],16:[function(require,module,exports){
+},{"../js/lib/util":5,"react":"himR+j"}],16:[function(require,module,exports){
 /**
  * MUI React container module
  * @module react/container
@@ -2034,6 +2057,7 @@ var Container = function (_React$Component) {
 
 /** Define module API */
 
+
 Container.propTypes = {
   fluid: _react2.default.PropTypes.bool
 };
@@ -2044,7 +2068,7 @@ Container.defaultProps = {
 exports.default = Container;
 module.exports = exports['default'];
 
-},{"react":"CwoHg3"}],17:[function(require,module,exports){
+},{"react":"himR+j"}],17:[function(require,module,exports){
 /**
  * MUI React divider module
  * @module react/divider
@@ -2080,6 +2104,7 @@ var Divider = function (_React$Component) {
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['children']);
 
+
       return _react2.default.createElement('div', babelHelpers.extends({}, other, {
         className: 'mui-divider ' + this.props.className
       }));
@@ -2090,13 +2115,14 @@ var Divider = function (_React$Component) {
 
 /** Define module API */
 
+
 Divider.defaultProps = {
   className: ''
 };
 exports.default = Divider;
 module.exports = exports['default'];
 
-},{"react":"CwoHg3"}],18:[function(require,module,exports){
+},{"react":"himR+j"}],18:[function(require,module,exports){
 /**
  * MUI React dropdowns module
  * @module react/dropdowns
@@ -2117,6 +2143,7 @@ var _react2 = babelHelpers.interopRequireDefault(_react);
 var _util = require('../js/lib/util');
 
 var util = babelHelpers.interopRequireWildcard(_util);
+
 
 var PropTypes = _react2.default.PropTypes;
 
@@ -2149,6 +2176,7 @@ var DropdownItem = function (_React$Component) {
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['children']);
 
+
       return _react2.default.createElement(
         'li',
         other,
@@ -2165,6 +2193,7 @@ var DropdownItem = function (_React$Component) {
 
 /** Define module API */
 
+
 DropdownItem.propTypes = {
   link: PropTypes.string,
   onClick: PropTypes.func
@@ -2176,7 +2205,7 @@ DropdownItem.defaultProps = {
 exports.default = DropdownItem;
 module.exports = exports['default'];
 
-},{"../js/lib/util":5,"react":"CwoHg3"}],19:[function(require,module,exports){
+},{"../js/lib/util":5,"react":"himR+j"}],19:[function(require,module,exports){
 /**
  * MUI React dropdowns module
  * @module react/dropdowns
@@ -2209,6 +2238,7 @@ var jqLite = babelHelpers.interopRequireWildcard(_jqLite);
 var _util = require('../js/lib/util');
 
 var util = babelHelpers.interopRequireWildcard(_util);
+
 
 var PropTypes = _react2.default.PropTypes,
     dropdownClass = 'mui-dropdown',
@@ -2348,6 +2378,7 @@ var Dropdown = function (_React$Component) {
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['ref', 'className', 'children']);
 
+
       return _react2.default.createElement(
         'div',
         babelHelpers.extends({}, other, {
@@ -2363,6 +2394,7 @@ var Dropdown = function (_React$Component) {
 }(_react2.default.Component);
 
 /** Define module API */
+
 
 Dropdown.propTypes = {
   color: PropTypes.oneOf(['default', 'primary', 'danger', 'dark', 'accent']),
@@ -2386,7 +2418,7 @@ Dropdown.defaultProps = {
 exports.default = Dropdown;
 module.exports = exports['default'];
 
-},{"../js/lib/jqLite":4,"../js/lib/util":5,"./button":7,"./caret":8,"react":"CwoHg3"}],20:[function(require,module,exports){
+},{"../js/lib/jqLite":4,"../js/lib/util":5,"./button":7,"./caret":8,"react":"himR+j"}],20:[function(require,module,exports){
 /**
  * MUI React form module
  * @module react/form
@@ -2437,6 +2469,7 @@ var Form = function (_React$Component) {
 
 /** Define module API */
 
+
 Form.propTypes = {
   inline: _react2.default.PropTypes.bool
 };
@@ -2447,7 +2480,7 @@ Form.defaultProps = {
 exports.default = Form;
 module.exports = exports['default'];
 
-},{"react":"CwoHg3"}],21:[function(require,module,exports){
+},{"react":"himR+j"}],21:[function(require,module,exports){
 /**                                                                            
  * MUI React Input Component
  * @module react/input
@@ -2498,7 +2531,7 @@ Input.defaultProps = {
 exports.default = Input;
 module.exports = exports['default'];
 
-},{"./text-field":10,"react":"CwoHg3"}],22:[function(require,module,exports){
+},{"./text-field":10,"react":"himR+j"}],22:[function(require,module,exports){
 /**
  * MUI React options module
  * @module react/option
@@ -2526,6 +2559,7 @@ var _util = require('../js/lib/util');
 
 var util = babelHelpers.interopRequireWildcard(_util);
 
+
 var PropTypes = _react2.default.PropTypes;
 
 /**
@@ -2548,6 +2582,7 @@ var Option = function (_React$Component) {
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['children']);
 
+
       return _react2.default.createElement(
         'option',
         babelHelpers.extends({}, other, { value: this.props.value }),
@@ -2560,6 +2595,7 @@ var Option = function (_React$Component) {
 
 /** Define module API */
 
+
 Option.propTypes = {
   value: PropTypes.string,
   label: PropTypes.string
@@ -2571,7 +2607,7 @@ Option.defaultProps = {
 exports.default = Option;
 module.exports = exports['default'];
 
-},{"../js/lib/forms":3,"../js/lib/jqLite":4,"../js/lib/util":5,"react":"CwoHg3"}],23:[function(require,module,exports){
+},{"../js/lib/forms":3,"../js/lib/jqLite":4,"../js/lib/util":5,"react":"himR+j"}],23:[function(require,module,exports){
 /**
  * MUI React layout module
  * @module react/layout
@@ -2617,13 +2653,14 @@ var Panel = function (_React$Component) {
 
 /** Define module API */
 
+
 Panel.defaultProps = {
   className: ''
 };
 exports.default = Panel;
 module.exports = exports['default'];
 
-},{"react":"CwoHg3"}],24:[function(require,module,exports){
+},{"react":"himR+j"}],24:[function(require,module,exports){
 /**
  * MUI React radio module
  * @module react/radio
@@ -2661,6 +2698,7 @@ var Radio = function (_React$Component) {
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['children']);
 
+
       return _react2.default.createElement(
         'div',
         babelHelpers.extends({}, other, {
@@ -2689,6 +2727,7 @@ var Radio = function (_React$Component) {
 
 /** Define module API */
 
+
 Radio.propTypes = {
   name: PropTypes.string,
   label: PropTypes.string,
@@ -2711,7 +2750,7 @@ Radio.defaultProps = {
 exports.default = Radio;
 module.exports = exports['default'];
 
-},{"react":"CwoHg3"}],25:[function(require,module,exports){
+},{"react":"himR+j"}],25:[function(require,module,exports){
 /**
  * MUI React Row Component
  * @module react/row
@@ -2730,6 +2769,7 @@ var _react2 = babelHelpers.interopRequireDefault(_react);
 var _util = require('../js/lib/util');
 
 var util = babelHelpers.interopRequireWildcard(_util);
+
 
 var breakpoints = ['xs', 'sm', 'md', 'lg'];
 
@@ -2763,13 +2803,14 @@ var Row = function (_React$Component) {
 
 /** Define module API */
 
+
 Row.defaultProps = {
   className: ''
 };
 exports.default = Row;
 module.exports = exports['default'];
 
-},{"../js/lib/util":5,"react":"CwoHg3"}],26:[function(require,module,exports){
+},{"../js/lib/util":5,"react":"himR+j"}],26:[function(require,module,exports){
 /**
  * MUI React select module
  * @module react/select
@@ -2811,6 +2852,7 @@ var Select = function (_React$Component) {
 
   function Select(props) {
     babelHelpers.classCallCheck(this, Select);
+
 
     // warn if value defined but onChange is not
 
@@ -2994,6 +3036,7 @@ var Select = function (_React$Component) {
       var onChange = _props.onChange;
       var other = babelHelpers.objectWithoutProperties(_props, ['children', 'onChange']);
 
+
       return _react2.default.createElement(
         'div',
         babelHelpers.extends({}, other, {
@@ -3031,6 +3074,7 @@ var Select = function (_React$Component) {
  * Menu constructor
  * @class
  */
+
 
 Select.propTypes = {
   name: PropTypes.string,
@@ -3070,6 +3114,7 @@ var Menu = function (_React$Component2) {
       origIndex: null,
       currentIndex: null
     };
+
 
     _this3.onKeydownCB = util.callback(_this3, 'onKeydown');
     return _this3;
@@ -3205,6 +3250,7 @@ var Menu = function (_React$Component2) {
 
 /** Define module API */
 
+
 Menu.defaultProps = {
   optionEls: [],
   wrapperEl: null,
@@ -3214,9 +3260,9 @@ Menu.defaultProps = {
 exports.default = Select;
 module.exports = exports['default'];
 
-},{"../js/lib/forms":3,"../js/lib/jqLite":4,"../js/lib/util":5,"./_helpers":6,"react":"CwoHg3"}],27:[function(require,module,exports){
+},{"../js/lib/forms":3,"../js/lib/jqLite":4,"../js/lib/util":5,"./_helpers":6,"react":"himR+j"}],27:[function(require,module,exports){
 module.exports=require(9)
-},{"react":"CwoHg3"}],28:[function(require,module,exports){
+},{"react":"himR+j"}],28:[function(require,module,exports){
 /**
  * MUI React tabs module
  * @module react/tabs
@@ -3241,6 +3287,7 @@ var _tab2 = babelHelpers.interopRequireDefault(_tab);
 var _util = require('../js/lib/util');
 
 var util = babelHelpers.interopRequireWildcard(_util);
+
 
 var PropTypes = _react2.default.PropTypes,
     tabsBarClass = 'mui-tabs__bar',
@@ -3286,6 +3333,7 @@ var Tabs = function (_React$Component) {
       var _props = this.props;
       var children = _props.children;
       var other = babelHelpers.objectWithoutProperties(_props, ['children']);
+
 
       var tabEls = [],
           paneEls = [],
@@ -3346,6 +3394,7 @@ var Tabs = function (_React$Component) {
 
 /** Define module API */
 
+
 Tabs.propTypes = {
   initialSelectedIndex: PropTypes.number,
   justified: PropTypes.bool,
@@ -3360,7 +3409,7 @@ Tabs.defaultProps = {
 exports.default = Tabs;
 module.exports = exports['default'];
 
-},{"../js/lib/util":5,"./tab":9,"react":"CwoHg3"}],29:[function(require,module,exports){
+},{"../js/lib/util":5,"./tab":9,"react":"himR+j"}],29:[function(require,module,exports){
 /**
  * MUI React Textarea Component
  * @module react/textarea
@@ -3412,4 +3461,4 @@ Textarea.defaultProps = {
 exports.default = Textarea;
 module.exports = exports['default'];
 
-},{"./text-field":10,"react":"CwoHg3"}]},{},[1])
+},{"./text-field":10,"react":"himR+j"}]},{},[1])
