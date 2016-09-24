@@ -18,13 +18,12 @@ var _react2 = babelHelpers.interopRequireDefault(_react);
  * Divider constructor
  * @class
  */
-
 var Divider = function (_React$Component) {
   babelHelpers.inherits(Divider, _React$Component);
 
   function Divider() {
     babelHelpers.classCallCheck(this, Divider);
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Divider).apply(this, arguments));
+    return babelHelpers.possibleConstructorReturn(this, (Divider.__proto__ || Object.getPrototypeOf(Divider)).apply(this, arguments));
   }
 
   babelHelpers.createClass(Divider, [{
@@ -32,10 +31,12 @@ var Divider = function (_React$Component) {
     value: function render() {
       var _props = this.props;
       var children = _props.children;
-      var other = babelHelpers.objectWithoutProperties(_props, ['children']);
+      var className = _props.className;
+      var reactProps = babelHelpers.objectWithoutProperties(_props, ['children', 'className']);
 
-      return _react2.default.createElement('div', babelHelpers.extends({}, other, {
-        className: 'mui-divider ' + this.props.className
+
+      return _react2.default.createElement('div', babelHelpers.extends({}, reactProps, {
+        className: 'mui-divider ' + className
       }));
     }
   }]);
@@ -43,6 +44,7 @@ var Divider = function (_React$Component) {
 }(_react2.default.Component);
 
 /** Define module API */
+
 
 Divider.defaultProps = {
   className: ''

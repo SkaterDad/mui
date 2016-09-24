@@ -42,14 +42,12 @@ var Select = function (_React$Component) {
     babelHelpers.classCallCheck(this, Select);
 
     // warn if value defined but onChange is not
-
-    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Select).call(this, props));
+    var _this = babelHelpers.possibleConstructorReturn(this, (Select.__proto__ || Object.getPrototypeOf(Select)).call(this, props));
 
     _this.state = {
-      value: null,
       showMenu: false
     };
-    if (props.readOnly === false && props.value !== null && props.onChange === null) {
+    if (props.readOnly === false && props.value !== undefined && props.onChange === null) {
       util.raiseError(_helpers.controlledMessage, true);
     }
 
@@ -91,6 +89,10 @@ var Select = function (_React$Component) {
     value: function onInnerMouseDown(ev) {
       if (ev.button !== 0 || this.props.useDefault === true) return;
       ev.preventDefault();
+
+      // execute callback
+      var fn = this.props.onMouseDown;
+      fn && fn(ev);
     }
   }, {
     key: 'onInnerChange',
@@ -98,14 +100,19 @@ var Select = function (_React$Component) {
       var value = ev.target.value;
       this.setState({ value: value });
 
+      // execute callback
       var fn = this.props.onChange;
-      if (fn) fn(value);
+      fn && fn(value);
     }
   }, {
     key: 'onInnerClick',
     value: function onInnerClick(ev) {
       if (ev.button !== 0) return; // only left clicks
       this.showMenu();
+
+      // execute callback
+      var fn = this.props.onClick;
+      fn && fn(ev);
     }
   }, {
     key: 'onInnerFocus',
@@ -136,6 +143,10 @@ var Select = function (_React$Component) {
 
       // attach keydown handler
       jqLite.on(document, 'keydown', this.onKeydownCB);
+
+      // execute callback
+      var fn = this.onFocus;
+      fn && fn(ev);
     }
   }, {
     key: 'onOuterBlur',
@@ -149,6 +160,10 @@ var Select = function (_React$Component) {
 
       // remove keydown handler
       jqLite.off(document, 'keydown', this.onKeydownCB);
+
+      // execute callback
+      var fn = this.onBlur;
+      fn && fn(ev);
     }
   }, {
     key: 'onKeydown',
@@ -181,7 +196,7 @@ var Select = function (_React$Component) {
     key: 'hideMenu',
     value: function hideMenu() {
       // remove scroll lock
-      util.disableScrollLock();
+      util.disableScrollLock(true);
 
       // remove event listeners
       jqLite.off(window, 'resize', this.hideMenuCB);
@@ -207,7 +222,7 @@ var Select = function (_React$Component) {
   }, {
     key: 'render',
     value: function render() {
-      var menuElem = undefined;
+      var menuElem = void 0;
 
       if (this.state.showMenu) {
         menuElem = _react2.default.createElement(Menu, {
@@ -220,34 +235,42 @@ var Select = function (_React$Component) {
 
       var _props = this.props;
       var children = _props.children;
-      var onChange = _props.onChange;
-      var other = babelHelpers.objectWithoutProperties(_props, ['children', 'onChange']);
+      var className = _props.className;
+      var style = _props.style;
+      var label = _props.label;
+      var defaultValue = _props.defaultValue;
+      var readOnly = _props.readOnly;
+      var useDefault = _props.useDefault;
+      var reactProps = babelHelpers.objectWithoutProperties(_props, ['children', 'className', 'style', 'label', 'defaultValue', 'readOnly', 'useDefault']);
+
 
       return _react2.default.createElement(
         'div',
-        babelHelpers.extends({}, other, {
+        {
           ref: 'wrapperEl',
-          className: 'mui-select ' + this.props.className,
+          style: style,
+          className: 'mui-select ' + className,
           onFocus: this.onOuterFocusCB,
           onBlur: this.onOuterBlurCB
-        }),
+        },
         _react2.default.createElement(
           'select',
-          {
+          babelHelpers.extends({}, reactProps, {
             ref: 'selectEl',
-            name: this.props.name,
             value: this.state.value,
-            defaultValue: this.props.defaultValue,
-            disabled: this.props.disabled,
-            multiple: this.props.multiple,
+            defaultValue: defaultValue,
             readOnly: this.props.readOnly,
-            required: this.props.required,
             onChange: this.onInnerChangeCB,
             onMouseDown: this.onInnerMouseDownCB,
             onClick: this.onInnerClickCB,
             onFocus: this.onInnerFocusCB
-          },
-          this.props.children
+          }),
+          children
+        ),
+        _react2.default.createElement(
+          'label',
+          null,
+          label
         ),
         menuElem
       );
@@ -261,29 +284,19 @@ var Select = function (_React$Component) {
  * @class
  */
 
+
 Select.propTypes = {
-  name: PropTypes.string,
+  label: PropTypes.string,
   value: PropTypes.string,
   defaultValue: PropTypes.string,
-  autoFocus: PropTypes.bool,
-  disabled: PropTypes.bool,
-  multiple: PropTypes.bool,
   readOnly: PropTypes.bool,
-  required: PropTypes.bool,
   useDefault: PropTypes.bool,
   onChange: PropTypes.func
 };
 Select.defaultProps = {
   className: '',
-  name: null,
-  value: null,
-  defaultValue: null,
-  autoFocus: false,
-  disabled: false,
-  multiple: false,
   readOnly: false,
-  required: false,
-  useDefault: false,
+  useDefault: 'ontouchstart' in document.documentElement ? true : false,
   onChange: null
 };
 
@@ -293,12 +306,13 @@ var Menu = function (_React$Component2) {
   function Menu(props) {
     babelHelpers.classCallCheck(this, Menu);
 
-    var _this3 = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Menu).call(this, props));
+    var _this3 = babelHelpers.possibleConstructorReturn(this, (Menu.__proto__ || Object.getPrototypeOf(Menu)).call(this, props));
 
     _this3.state = {
       origIndex: null,
       currentIndex: null
     };
+
 
     _this3.onKeydownCB = util.callback(_this3, 'onKeydown');
     return _this3;
@@ -310,7 +324,7 @@ var Menu = function (_React$Component2) {
       var optionEls = this.props.optionEls,
           m = optionEls.length,
           selectedPos = 0,
-          i = undefined;
+          i = void 0;
 
       // get current selected position
       for (i = m - 1; i > -1; i--) {
@@ -321,7 +335,7 @@ var Menu = function (_React$Component2) {
     key: 'componentDidMount',
     value: function componentDidMount() {
       // blur active element (IE10 bugfix)
-      setTimeout(function () {
+      this.blurTimer = setTimeout(function () {
         var el = document.activeElement;
         if (el.nodeName.toLowerCase() !== 'body') el.blur();
       }, 0);
@@ -339,6 +353,9 @@ var Menu = function (_React$Component2) {
   }, {
     key: 'componentWillUnmount',
     value: function componentWillUnmount() {
+      // clear timer
+      clearTimeout(this.blurTimer);
+
       // remove keydown handler
       jqLite.off(document, 'keydown', this.onKeydownCB);
     }
@@ -403,13 +420,16 @@ var Menu = function (_React$Component2) {
       var menuItems = [],
           optionEls = this.props.optionEls,
           m = optionEls.length,
-          optionEl = undefined,
-          cls = undefined,
-          i = undefined;
+          optionEl = void 0,
+          cls = void 0,
+          i = void 0;
 
       // define menu items
       for (i = 0; i < m; i++) {
-        cls = i === this.state.currentIndex ? 'mui--is-selected' : '';
+        cls = i === this.state.currentIndex ? 'mui--is-selected ' : '';
+
+        // add custom css class from <Option> component
+        cls += optionEls[i].className;
 
         menuItems.push(_react2.default.createElement(
           'div',
@@ -433,6 +453,7 @@ var Menu = function (_React$Component2) {
 }(_react2.default.Component);
 
 /** Define module API */
+
 
 Menu.defaultProps = {
   optionEls: [],

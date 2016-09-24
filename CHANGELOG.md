@@ -1,5 +1,156 @@
 # MUI Changelog
 
+## 0.8.1 - September 20, 2016
+
+* Added support for disabled options to MUI CSS/JS Select component
+* Modified Select components to use browser built-in menu for touchscreen
+  devices
+
+## 0.8.0 - September 15, 2016
+
+* Added RTL support to CSS
+* Added CDN package to NPM package
+
+## 0.7.5 - September 8, 2016
+
+* Added gulp watch task for development
+* Improved handling of focused elements when overlay method is activated
+* Added up/down scroll to overlay by setting focus to overlay element
+* Fixed issue with MUI Angular button attributes (e.g. `type`)
+
+## 0.7.4 - September 2, 2016
+
+* Added support for Optgroups to CSS/JS Select component
+
+## 0.7.3 - August 25, 2016
+
+* Added support for custom className to React Option component
+
+## 0.7.2 - August 24, 2016
+
+* Fixed bug causing React Select component to ignore value change on item
+  click in dropdown menu
+* Removed reset scroll position from overlay teardown
+
+## 0.7.1 - August 21, 2016
+
+* Fixed bug causing React Input and Textarea components with defaultValue to
+  unfloat labels on state update
+
+## 0.7.0 - August 17, 2016
+
+* Fixed bug preventing execution of onFocus callback in React Input and
+  Textarea components
+
+## 0.6.9 - August 11, 2016
+
+* Fixed empty/not-empty CSS bug with React Input and Textarea components
+
+## 0.6.8 - July 12, 2016
+
+* Changed class name of background color helpers
+* Added danger color to background color helpers
+
+## 0.6.7 - July 12, 2016
+
+* Added background color helpers
+
+## 0.6.6 - July 10, 2016
+
+* Improved handling of spread attributes in MUI React library to prevent
+  unknown property warnings in React 15.2.1
+* Fixed bug in React Button component that was ignoring mouse/touch event
+  callbacks (onMouseDown, onMouseUp, onMouseLeave, onTouchStart, onTouchEnd)
+
+## 0.6.5 - June 26, 2016
+
+* Fixed bug in React dropdown component causing issues with server-side
+  rendering
+
+## 0.6.4 - June 25, 2016
+
+* Removed reference to document in MUI React button module causing issues with
+  server-side rendering
+
+## 0.6.3 - June 22, 2016
+
+* Improved handling of ripple dimensions to deal with long buttons
+
+## 0.6.2 - June 22, 2016
+
+* Fixed bug causing recursive call to requestAnimationFrame
+
+## 0.6.1 - June 22, 2016
+
+* Fixed slow animation issue with ripple effect in Firefox on linux
+* Improved ripple effect animation
+
+## 0.6.0 - May 22, 2016
+
+* Added support for select box label to MUI CSS/JS, MUI React and MUI Angular
+
+## 0.5.9 - May 17, 2016
+
+* Set z-index of .mui-select__menu to 2 to fix overlap bug with floating action
+  buttons
+
+## 0.5.8 - May 6, 2016
+
+* Added react@^15.0.0 as peerDependency in NPM package.json
+
+## 0.5.7 - May 5, 2016
+
+* Fixed Angular injector minification bug in MUI Tabs
+
+## 0.5.6 - April 28, 2016
+
+* Bugfix to Email SASS semantic markup
+* Handling timeouts gracefully in React componentWillUnmount
+
+## 0.5.5 - April 26, 2016
+
+* Using ES6 for Angular source code
+* Added MUI Angular to NPM package
+
+## 0.5.4 - April 22, 2016
+
+* Added support for `target` attribute to React DropdownItem
+
+## 0.5.3 - April 16, 2016
+
+* Added support for Angular Tabs directive
+* Fixed focus bug with Angular Select directive
+
+## 0.5.2 - April 14, 2016
+
+* Added support for React 15.0.1
+
+## 0.5.1 - April 12, 2016
+
+* Fixed bug causing onChange to be called twice on React <Checkbox> and <Radio>
+
+## 0.5.0 - April 7, 2016
+
+* Major upgrade to Angular library - fixed many bugs and added missing features
+
+## 0.4.9 - April 6, 2016
+
+* Fixed bug in React Dropdown that prevented menu from closing when a
+  DropdownItem was selected
+* Fixed bug in React Dropdown that fired onClick event on DropdownItem twice
+* Added support for onSelect event to React Dropdown
+* Added support for React elements to React Dropdown label
+
+## 0.4.8 - March 30, 2016
+
+* Fixed bug that kept dropdowns open when other dropdowns were clicked on
+
+## 0.4.7 - March 1, 2016
+
+* Added JS `change` eveent handler to mui-textfield input elements
+* Improved organization of MUI sass files
+* Improved organization of MUI js files
+
 ## 0.4.6 - February 18, 2016
 
 * Fixed component name errors in NPM react.js module

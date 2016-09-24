@@ -1,88 +1,148 @@
-var jqLite = require('../js/lib/jqLite');
-module.exports = angular.module('mui.button', [])
+/**
+ * MUI Angular Button Component
+ * @module angular/button
+ */
+
+import angular from 'angular';
+
+import * as jqLite from '../js/lib/jqLite';
+import * as util from '../js/lib/util';
+
+
+const moduleName = 'mui.button',
+      rippleClass = 'mui-ripple-effect',
+      supportsTouch = 'ontouchstart' in document.documentElement,
+      mouseDownEvents = (supportsTouch) ? 'touchstart' : 'mousedown',
+      mouseUpEvents = (supportsTouch) ? 'touchend' : 'mouseup mouseleave',
+      animationDuration = 600;
+
+
+angular.module(moduleName, [])
   .directive('muiButton', function() {
     return {
       restrict: 'AE',
-      scope: {},
       replace: true,
-      template: '<button class="mui-btn" ripple ng-transclude></button>',
+      template: '<button class="mui-btn" mui-ripple ng-transclude></button>',
       transclude: true,
       link: function(scope, element, attrs) {
-        var btnClass = 'mui-btn',
-          styles = {
-            variant: 1, //['default', 'flat', 'raised', 'fab']
-            color: 1, //['default', 'primary', 'danger', 'dark','accent']
-            size: 1 //['default', 'small', 'large']
-          };
+        var isUndef = angular.isUndefined,
+            el = element[0];
 
-        scope.type = scope.type || 'button';
+        // disable MUI js
+        el._muiDropdown = true;
+        el._muiRipple = true;
 
-        //如果仅存在disabled 属性而没有 ngDisabled 设置ngDisabled = true
-        if (!angular.isUndefined(attrs.disabled) && angular.isUndefined(attrs.ngDisabled)) {
+        // handle disabled attribute
+        if (!isUndef(attrs.disabled) && isUndef(attrs.ngDisabled)) {
           element.prop('disabled', true);
         }
 
-        //change btn-style by attrs
-        var _renderBtn = function() {
-          element.removeAttr('class').addClass(btnClass);
-          angular.forEach(styles, function(value, style) {
-            element.addClass(attrs[style] ? 'mui-btn--' + attrs[style] : '');
-          });
-        };
-
-        //observe each attr and rerender button
-        angular.forEach(styles, function(value, style) {
-          attrs.$observe(style, function() {
-            _renderBtn();
-          });
+        // set button styles        
+        angular.forEach(['variant', 'color', 'size'], function(attrName) {
+          var attrVal = attrs[attrName];
+          if (attrVal) element.addClass('mui-btn--' + attrVal);
         });
-
       }
-
     };
   })
-  .directive('ripple', function($timeout) {
+  .directive('muiRipple', ['$timeout', function($timeout) {
     return {
       restrict: 'A',
       link: function(scope, element, attrs) {
-        var rippleClass = 'mui-ripple-effect';
-
-        /**
-         * onmousedown ripple effect
-         * @param  {event} mousedown event
-         */
-        element.on('mousedown', function(event) {
-          if (element.prop('disabled')) return;
-
-          var offset = jqLite.offset(element[0]),
-            xPos = event.pageX - offset.left,
-            yPos = event.pageY - offset.top,
-            diameter,
-            radius;
-
-          diameter = offset.height;
-          if (element.hasClass('mui-btn--fab')) diameter = offset.height / 2;
-          radius = diameter / 2;
-
-          // ripple Dom position
-          var rippleStyle = {
-            height: diameter + 'px',
-            width: diameter + 'px',
-            top: (yPos - radius) + 'px',
-            left: (xPos - radius) + 'px'
-          };
-
-          var ripple = angular.element('<div></div>').addClass(rippleClass);
-          for (var style in rippleStyle) {
-            ripple.css(style, rippleStyle[style]);
-          }
-
-          element.append(ripple);
-          $timeout(function() {
-            ripple.remove();
-          }, 2000);
-
-        });
+        // add mousedown event handler
+        element.on(mouseDownEvents, mouseDownHandler);
       }
-    };
+    }
+  }]);
+
+
+/**
+ * MouseDown event handler.
+ * @param {Event} ev - The DOM event
+ */
+function mouseDownHandler(ev) {
+  var element = angular.element(this);
+
+  // exit if disabled
+  if (element.prop('disabled')) return;
+  
+  // add mouseup event handler once
+  if (!this.muiMouseUp) {
+    element.on(mouseUpEvents, mouseUpHandler);
+    this.muiMouseUp = true;
+  }
+
+  // get (x, y) position of click
+  var offset = jqLite.offset(this),
+      clickEv = (ev.type === 'touchstart') ? ev.touches[0] : ev,
+      xPos = clickEv.pageX - offset.left,
+      yPos = clickEv.pageY - offset.top,
+      diameter,
+      radius,
+      rippleEl;
+
+  // calculate diameter
+  diameter = Math.sqrt(offset.width * offset.width +
+                       offset.height * offset.height) * 2;
+  
+  // create ripple element
+  rippleEl = angular.element('<div class="' + rippleClass + '"></div>');
+  
+  radius = diameter / 2;
+  
+  rippleEl.css({
+    height: diameter + 'px',
+    width: diameter + 'px',
+    top: (yPos - radius) + 'px',
+    left: (xPos - radius) + 'px'
   });
+  
+  // add to DOM
+  element.append(rippleEl);  
+
+  // start animation
+  util.requestAnimationFrame(function() {
+    rippleEl.addClass('mui--animate-in mui--active');
+  });
+}
+
+
+/**
+ * MouseUp event handler.
+ * @param {Event} ev - The DOM event
+ */
+function mouseUpHandler(ev) {
+  var children = this.children,
+      i = children.length,
+      rippleEls = [],
+      el;
+
+  // animate out ripples
+  while (i--) {
+    el = children[i];
+    if (jqLite.hasClass(el, rippleClass)) {
+      jqLite.addClass(el, 'mui--animate-out');
+      rippleEls.push(el);
+    }
+  }
+
+  // remove ripples after animation
+  if (rippleEls.length) {
+    setTimeout(function() {
+      var i = rippleEls.length,
+          el,
+          parentNode;
+
+      // remove elements
+      while (i--) {
+        el = rippleEls[i];
+        parentNode = el.parentNode;
+        if (parentNode) parentNode.removeChild(el);
+      }
+    }, animationDuration);
+  }
+}
+
+
+/** Define module API */
+export default moduleName;

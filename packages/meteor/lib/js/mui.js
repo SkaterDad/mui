@@ -13,12 +13,12 @@
   
   // load dependencies
   var jqLite = require('src/js/lib/jqLite'),
-      textfield = require('src/js/forms/textfield'),
-      select = require('src/js/forms/select'),
-      ripple = require('src/js/ripple'),
-      dropdowns = require('src/js/dropdowns'),
+      dropdown = require('src/js/dropdown'),
+      overlay = require('src/js/overlay'),
+      ripple = require('src/js/ripple'),      
+      select = require('src/js/select'),
       tabs = require('src/js/tabs'),
-      overlay = require('src/js/overlay');
+      textfield = require('src/js/textfield');
 
   // expose api
   win.mui = {
@@ -31,12 +31,12 @@
     textfield.initListeners();
     select.initListeners();
     ripple.initListeners();
-    dropdowns.initListeners();
+    dropdown.initListeners();
     tabs.initListeners();
   });
 })(window);
 
-},{"src/js/dropdowns":6,"src/js/forms/select":7,"src/js/forms/textfield":8,"src/js/lib/jqLite":9,"src/js/overlay":10,"src/js/ripple":11,"src/js/tabs":12}],2:[function(require,module,exports){
+},{"src/js/dropdown":6,"src/js/lib/jqLite":7,"src/js/overlay":8,"src/js/ripple":9,"src/js/select":10,"src/js/tabs":11,"src/js/textfield":12}],2:[function(require,module,exports){
 /**
  * MUI config module
  * @module config
@@ -58,7 +58,7 @@ module.exports = {
 
 var wrapperPadding = 15,  // from CSS
     inputHeight = 32,  // from CSS
-    optionHeight = 42,  // from CSS
+    rowHeight = 42,  // from CSS
     menuPadding = 8;  // from CSS
 
 
@@ -66,18 +66,18 @@ var wrapperPadding = 15,  // from CSS
  * Menu position/size/scroll helper
  * @returns {Object} Object with keys 'height', 'top', 'scrollTop'
  */
-function getMenuPositionalCSSFn(wrapperEl, numOptions, currentIndex) {
+function getMenuPositionalCSSFn(wrapperEl, numRows, selectedRow) {
   var viewHeight = document.documentElement.clientHeight;
 
   // determine 'height'
-  var h = numOptions * optionHeight + 2 * menuPadding,
+  var h = numRows * rowHeight + 2 * menuPadding,
       height = Math.min(h, viewHeight);
 
   // determine 'top'
   var top, initTop, minTop, maxTop;
 
-  initTop = (menuPadding + optionHeight) - (wrapperPadding + inputHeight);
-  initTop -= currentIndex * optionHeight;
+  initTop = (menuPadding + rowHeight) - (wrapperPadding + inputHeight);
+  initTop -= selectedRow * rowHeight;
 
   minTop = -1 * wrapperEl.getBoundingClientRect().top;
   maxTop = (viewHeight - height) + minTop;
@@ -90,9 +90,9 @@ function getMenuPositionalCSSFn(wrapperEl, numOptions, currentIndex) {
       scrollMax;
 
   if (h > viewHeight) {
-    scrollIdeal = (menuPadding + (currentIndex + 1) * optionHeight) -
+    scrollIdeal = (menuPadding + (selectedRow + 1) * rowHeight) -
       (-1 * top + wrapperPadding + inputHeight);
-    scrollMax = numOptions * optionHeight + 2 * menuPadding - height;
+    scrollMax = numRows * rowHeight + 2 * menuPadding - height;
     scrollTop = Math.min(scrollIdeal, scrollMax);
   }
 
@@ -217,72 +217,81 @@ function jqLiteType(somevar) {
 /**
  * Attach an event handler to a DOM element
  * @param {Element} element - The DOM element.
- * @param {string} type - The event type name.
+ * @param {string} events - Space separated event names.
  * @param {Function} callback - The callback function.
  * @param {Boolean} useCapture - Use capture flag.
  */
-function jqLiteOn(element, type, callback, useCapture) {
+function jqLiteOn(element, events, callback, useCapture) {
   useCapture = (useCapture === undefined) ? false : useCapture;
 
-  // add to DOM
-  element.addEventListener(type, callback, useCapture);
+  var cache = element._muiEventCache = element._muiEventCache || {};  
 
-  // add to cache
-  var cache = element._muiEventCache = element._muiEventCache || {};
-  cache[type] = cache[type] || [];
-  cache[type].push([callback, useCapture]);
+  events.split(' ').map(function(event) {
+    // add to DOM
+    element.addEventListener(event, callback, useCapture);
+
+    // add to cache
+    cache[event] = cache[event] || [];
+    cache[event].push([callback, useCapture]);
+  });
 }
 
 
 /**
  * Remove an event handler from a DOM element
  * @param {Element} element - The DOM element.
- * @param {string} type - The event type name.
+ * @param {string} events - Space separated event names.
  * @param {Function} callback - The callback function.
  * @param {Boolean} useCapture - Use capture flag.
  */
-function jqLiteOff(element, type, callback, useCapture) {
+function jqLiteOff(element, events, callback, useCapture) {
   useCapture = (useCapture === undefined) ? false : useCapture;
 
   // remove from cache
   var cache = element._muiEventCache = element._muiEventCache || {},
-      argsList = cache[type] || [],
+      argsList,
       args,
       i;
 
-  i = argsList.length;
-  while (i--) {
-    args = argsList[i];
+  events.split(' ').map(function(event) {
+    argsList = cache[event] || [];
 
-    // remove all events if callback is undefined
-    if (callback === undefined ||
-        (args[0] === callback && args[1] === useCapture)) {
+    i = argsList.length;
+    while (i--) {
+      args = argsList[i];
 
-      // remove from cache
-      argsList.splice(i, 1);
-      
-      // remove from DOM
-      element.removeEventListener(type, args[0], args[1]);
+      // remove all events if callback is undefined
+      if (callback === undefined ||
+          (args[0] === callback && args[1] === useCapture)) {
+
+        // remove from cache
+        argsList.splice(i, 1);
+        
+        // remove from DOM
+        element.removeEventListener(event, args[0], args[1]);
+      }
     }
-  }
+  });
 }
 
 
 /**
- * Attach an event hander which will only execute once
+ * Attach an event hander which will only execute once per element per event
  * @param {Element} element - The DOM element.
- * @param {string} type - The event type name.
+ * @param {string} events - Space separated event names.
  * @param {Function} callback - The callback function.
  * @param {Boolean} useCapture - Use capture flag.
  */
-function jqLiteOne(element, type, callback, useCapture) {
-  jqLiteOn(element, type, function onFn(ev) {
-    // execute callback
-    if (callback) callback.apply(this, arguments);
+function jqLiteOne(element, events, callback, useCapture) {
+  events.split(' ').map(function(event) {
+    jqLiteOn(element, event, function onFn(ev) {
+      // execute callback
+      if (callback) callback.apply(this, arguments);
 
-    // remove wrapper
-    jqLiteOff(element, type, onFn);
-  }, useCapture);
+      // remove wrapper
+      jqLiteOff(element, event, onFn);
+    }, useCapture);
+  });
 }
 
 
@@ -423,19 +432,7 @@ function jqLiteRemoveClass(element, cssClasses) {
 // ------------------------------
 var SPECIAL_CHARS_REGEXP = /([\:\-\_]+(.))/g,
     MOZ_HACK_REGEXP = /^moz([A-Z])/,
-    ESCAPE_REGEXP = /([.*+?^=!:${}()|\[\]\/\\])/g,
-    BOOLEAN_ATTRS;
-
-
-BOOLEAN_ATTRS = {
-  multiple: true,
-  selected: true,
-  checked: true,
-  disabled: true,
-  readonly: true,
-  required: true,
-  open: true
-}
+    ESCAPE_REGEXP = /([.*+?^=!:${}()|\[\]\/\\])/g;
 
 
 function _getExistingClasses(element) {
@@ -595,12 +592,10 @@ function onNodeInsertedFn(callbackFn) {
 
   // initalize listeners
   if (nodeInsertedCallbacks._initialized === undefined) {
-    var doc = document;
+    var doc = document,
+        events = 'animationstart mozAnimationStart webkitAnimationStart';
 
-    jqLite.on(doc, 'animationstart', animationHandlerFn);
-    jqLite.on(doc, 'mozAnimationStart', animationHandlerFn);
-    jqLite.on(doc, 'webkitAnimationStart', animationHandlerFn);
-
+    jqLite.on(doc, events, animationHandlerFn);
     nodeInsertedCallbacks._initialized = true;
   }
 }
@@ -693,7 +688,7 @@ function dispatchEventFn(element, eventType, bubbles, cancelable, data) {
  */
 function enableScrollLockFn() {
   // increment counter
-  scrollLock += 1
+  scrollLock += 1;
 
   // add lock
   if (scrollLock === 1) {
@@ -709,13 +704,14 @@ function enableScrollLockFn() {
 
 /**
  * Turn off window scroll lock.
+ * @param {Boolean} resetPos - Reset scroll position to original value.
  */
-function disableScrollLockFn() {
+function disableScrollLockFn(resetPos) {
   // ignore
   if (scrollLock === 0) return;
 
   // decrement counter
-  scrollLock -= 1
+  scrollLock -= 1;
 
   // remove lock 
   if (scrollLock === 0) {
@@ -723,8 +719,19 @@ function disableScrollLockFn() {
         doc = document;
 
     jqLite.removeClass(doc.body, scrollLockCls);
-    win.scrollTo(scrollLockPos.left, scrollLockPos.top);
+    if (resetPos) win.scrollTo(scrollLockPos.left, scrollLockPos.top);
   }
+}
+
+
+/**
+ * requestAnimationFrame polyfilled
+ * @param {Function} callback - The callback function
+ */
+function requestAnimationFrameFn(callback) {
+  var fn = window.requestAnimationFrame;
+  if (fn) fn(callback);
+  else setTimeout(callback, 0);
 }
 
 
@@ -759,6 +766,9 @@ module.exports = {
   /** Raise MUI error */
   raiseError: raiseErrorFn,
 
+  /** Request animation frame */
+  requestAnimationFrame: requestAnimationFrameFn,
+
   /** Support Pointer Events check */
   supportsPointerEvents: supportsPointerEventsFn
 };
@@ -789,6 +799,9 @@ function initialize(toggleEl) {
   if (toggleEl._muiDropdown === true) return;
   else toggleEl._muiDropdown = true;
 
+  // use type "button" to prevent form submission by default
+  if (!toggleEl.hasAttribute('type')) toggleEl.type = 'button';
+
   // attach click handler
   jqLite.on(toggleEl, 'click', clickHandler);
 }
@@ -806,10 +819,6 @@ function clickHandler(ev) {
   
   // exit if toggle button is disabled
   if (toggleEl.getAttribute('disabled') !== null) return;
-
-  // prevent form submission
-  ev.preventDefault();
-  ev.stopPropagation();
 
   // toggle dropdown
   toggleDropdown(toggleEl);
@@ -851,7 +860,7 @@ function toggleDropdown(toggleEl) {
     jqLite.addClass(menuEl, openClass);
 
     // close dropdown when user clicks outside of menu
-    jqLite.on(doc, 'click', closeDropdownFn);
+    setTimeout(function() {jqLite.on(doc, 'click', closeDropdownFn);}, 0);
   }
 
   // toggle dropdown
@@ -878,6 +887,371 @@ module.exports = {
 };
 
 },{"./lib/jqLite":4,"./lib/util":5}],7:[function(require,module,exports){
+module.exports=require(4)
+},{}],8:[function(require,module,exports){
+/**
+ * MUI CSS/JS overlay module
+ * @module overlay
+ */
+
+'use strict';
+
+
+var util = require('./lib/util'),
+    jqLite = require('./lib/jqLite'),
+    overlayId = 'mui-overlay',
+    bodyClass = 'mui--overflow-hidden',
+    iosRegex = /(iPad|iPhone|iPod)/g,
+    activeElement;
+
+
+/**
+ * Turn overlay on/off.
+ * @param {string} action - Turn overlay "on"/"off".
+ * @param {object} [options]
+ * @config {boolean} [keyboard] - If true, close when escape key is pressed.
+ * @config {boolean} [static] - If false, close when backdrop is clicked.
+ * @config {Function} [onclose] - Callback function to execute on close
+ * @param {Element} [childElement] - Child element to add to overlay.
+ */
+function overlayFn(action) {
+  var overlayEl;
+  
+  if (action === 'on') {
+    // extract arguments
+    var arg, options, childElement;
+    
+    // pull options and childElement from arguments
+    for (var i=arguments.length - 1; i > 0; i--) {
+      arg = arguments[i];
+
+      if (jqLite.type(arg) === 'object') options = arg;
+      if (arg instanceof Element && arg.nodeType === 1) childElement = arg;
+    }
+
+    // option defaults
+    options = options || {};
+    if (options.keyboard === undefined) options.keyboard = true;
+    if (options.static === undefined) options.static = false;
+    
+    // execute method
+    overlayEl = overlayOn(options, childElement);
+    
+  } else if (action === 'off') {
+    overlayEl = overlayOff();
+
+  } else {
+    // raise error
+    util.raiseError("Expecting 'on' or 'off'");
+
+  }
+
+  return overlayEl;
+}
+
+
+/**
+ * Turn on overlay.
+ * @param {object} options - Overlay options.
+ * @param {Element} childElement - The child element.
+ */
+function overlayOn(options, childElement) {
+  var doc = document,
+      bodyEl = doc.body,
+      overlayEl = doc.getElementById(overlayId);
+
+  // cache activeElement
+  if (doc.activeElement) activeElement = doc.activeElement;
+
+  // add overlay
+  util.enableScrollLock();
+
+  if (!overlayEl) {
+    // create overlayEl
+    overlayEl = doc.createElement('div');
+    overlayEl.setAttribute('id', overlayId);
+    overlayEl.setAttribute('tabindex', '-1');
+    
+    // add child element
+    if (childElement) overlayEl.appendChild(childElement);
+
+    bodyEl.appendChild(overlayEl);
+    
+  } else {
+    // remove existing children
+    while (overlayEl.firstChild) overlayEl.removeChild(overlayEl.firstChild);
+    
+    // add child element
+    if (childElement) overlayEl.appendChild(childElement);
+  }
+
+  // iOS bugfix
+  if (iosRegex.test(navigator.userAgent)) {
+    jqLite.css(overlayEl, 'cursor', 'pointer');
+  }
+
+  // handle options
+  if (options.keyboard) addKeyupHandler();
+  else removeKeyupHandler();
+
+  if (options.static) removeClickHandler(overlayEl);
+  else addClickHandler(overlayEl);
+
+  // attach options
+  overlayEl.muiOptions = options;
+
+  // focus overlay element
+  overlayEl.focus();
+
+  return overlayEl;
+}
+
+
+/**
+ * Turn off overlay.
+ */
+function overlayOff() {
+  var overlayEl = document.getElementById(overlayId),
+      callbackFn;
+
+  if (overlayEl) {
+    // remove children
+    while (overlayEl.firstChild) overlayEl.removeChild(overlayEl.firstChild);
+
+    // remove overlay element
+    overlayEl.parentNode.removeChild(overlayEl);
+
+    // callback reference
+    callbackFn = overlayEl.muiOptions.onclose;
+
+    // remove click handler
+    removeClickHandler(overlayEl);
+  }
+
+  util.disableScrollLock();
+
+  // remove keyup handler
+  removeKeyupHandler();
+
+  // return focus to activeElement
+  if (activeElement) activeElement.focus();
+
+  // execute callback
+  if (callbackFn) callbackFn();
+
+  return overlayEl;
+}
+
+
+/**
+ * Add keyup handler.
+ */
+function addKeyupHandler() {
+  jqLite.on(document, 'keyup', onKeyup);
+}
+
+
+/**
+ * Remove keyup handler.
+ */
+function removeKeyupHandler() {
+  jqLite.off(document, 'keyup', onKeyup);
+}
+
+
+/**
+ * Teardown overlay when escape key is pressed.
+ */
+function onKeyup(ev) {
+  if (ev.keyCode === 27) overlayOff();
+}
+
+
+/**
+ * Add click handler.
+ */
+function addClickHandler(overlayEl) {
+  jqLite.on(overlayEl, 'click', onClick);
+}
+
+
+/**
+ * Remove click handler.
+ */
+function removeClickHandler(overlayEl) {
+  jqLite.off(overlayEl, 'click', onClick);
+}
+
+
+/**
+ * Teardown overlay when backdrop is clicked.
+ */
+function onClick(ev) {
+  if (ev.target.id === overlayId) overlayOff();
+}
+
+
+/** Define module API */
+module.exports = overlayFn;
+
+},{"./lib/jqLite":4,"./lib/util":5}],9:[function(require,module,exports){
+/**
+ * MUI CSS/JS ripple module
+ * @module ripple
+ */
+
+'use strict';
+
+
+var jqLite = require('./lib/jqLite'),
+    util = require('./lib/util'),
+    btnClass = 'mui-btn',
+    btnFABClass = 'mui-btn--fab',
+    rippleClass = 'mui-ripple-effect',
+    supportsTouch = 'ontouchstart' in document.documentElement,
+    mouseDownEvents = (supportsTouch) ? 'touchstart' : 'mousedown',
+    mouseUpEvents = (supportsTouch) ? 'touchend' : 'mouseup mouseleave',
+    animationDuration = 600;
+
+
+/**
+ * Add ripple effects to button element.
+ * @param {Element} buttonEl - The button element.
+ */
+function initialize(buttonEl) {
+  // check flag
+  if (buttonEl._muiRipple === true) return;
+  else buttonEl._muiRipple = true;
+
+  // exit if element is INPUT (doesn't support absolute positioned children)
+  if (buttonEl.tagName === 'INPUT') return;
+
+  // attach event handler
+  jqLite.on(buttonEl, mouseDownEvents, mouseDownHandler);
+}
+
+
+/**
+ * MouseDown Event handler.
+ * @param {Event} ev - The DOM event
+ */
+function mouseDownHandler(ev) {
+  // only left clicks
+  if (ev.type === 'mousedown' && ev.button !== 0) return;
+
+  var buttonEl = this;
+
+  // exit if button is disabled
+  if (buttonEl.disabled === true) return;
+
+  // add mouseup event to button once
+  if (!buttonEl.muiMouseUp) {
+    jqLite.on(buttonEl, mouseUpEvents, mouseUpHandler);
+    buttonEl.muiMouseUp = true;
+  }
+
+  // create ripple element
+  var rippleEl = createRippleEl(ev, buttonEl);
+
+  buttonEl.appendChild(rippleEl);
+
+  // animate in
+  util.requestAnimationFrame(function() {
+    jqLite.addClass(rippleEl, 'mui--animate-in mui--active');
+  });
+}
+
+
+/**
+ * MouseUp event handler.
+ * @param {Event} ev - The DOM event
+ */
+function mouseUpHandler(ev) {
+  var children = this.children,
+      i = children.length,
+      rippleEls = [],
+      el;
+
+  // animate out ripples
+  while (i--) {
+    el = children[i];
+    if (jqLite.hasClass(el, rippleClass)) {
+      jqLite.addClass(el, 'mui--animate-out');
+      rippleEls.push(el);
+    }
+  }
+
+  // remove ripples after animation
+  if (rippleEls.length) {
+    setTimeout(function() {
+      var i = rippleEls.length,
+          el,
+          parentNode;
+
+      // remove elements
+      while (i--) {
+        el = rippleEls[i];
+        parentNode = el.parentNode;
+        if (parentNode) parentNode.removeChild(el);
+      }
+    }, animationDuration);
+  }
+}
+
+
+/**
+ * Create ripple element  
+ * @param {Element} - buttonEl - The button element.
+ */
+function createRippleEl(ev, buttonEl) {
+  // get (x, y) position of click
+  var offset = jqLite.offset(buttonEl),
+      clickEv = (ev.type === 'touchstart') ? ev.touches[0] : ev,
+      xPos = clickEv.pageX - offset.left,
+      yPos = clickEv.pageY - offset.top,
+      diameter,
+      radius,
+      rippleEl;
+
+  // calculate diameter
+  diameter = Math.sqrt(offset.width * offset.width + 
+                       offset.height * offset.height) * 2;
+
+  // create element
+  rippleEl = document.createElement('div'),
+  rippleEl.className = rippleClass;
+
+  radius = diameter / 2;
+
+  jqLite.css(rippleEl, {
+    height: diameter + 'px',
+    width: diameter + 'px',
+    top: yPos - radius + 'px',
+    left: xPos - radius + 'px'
+  });
+
+  return rippleEl;
+}
+
+
+/** Define module API */
+module.exports = {
+  /** Initialize module listeners */
+  initListeners: function() {
+    var doc = document;
+
+    // markup elements available when method is called
+    var elList = doc.getElementsByClassName(btnClass);
+    for (var i=elList.length - 1; i >= 0; i--) initialize(elList[i]);
+
+    // listen for new elements
+    util.onNodeInserted(function(el) {
+      if (jqLite.hasClass(el, btnClass)) initialize(el);
+    });
+  }
+};
+
+},{"./lib/jqLite":4,"./lib/util":5}],10:[function(require,module,exports){
 /**
  * MUI CSS/JS select module
  * @module forms/select
@@ -886,13 +1260,14 @@ module.exports = {
 'use strict';
 
 
-var jqLite = require('../lib/jqLite'),
-    util = require('../lib/util'),
-    formlib = require('../lib/forms'),
+var jqLite = require('./lib/jqLite'),
+    util = require('./lib/util'),
+    formlib = require('./lib/forms'),
     wrapperClass = 'mui-select',
     cssSelector = '.mui-select > select',
     menuClass = 'mui-select__menu',
     selectedClass = 'mui--is-selected',
+    disabledClass = 'mui--is-disabled',
     doc = document,
     win = window;
 
@@ -956,7 +1331,7 @@ Select.prototype.focusHandler = function(ev) {
 
   var selectEl = this.selectEl,
       wrapperEl = this.wrapperEl,
-      origIndex = selectEl.tabIndex,
+      tabIndex = selectEl.tabIndex,
       keydownFn = util.callback(this, 'keydownHandler');
 
   // attach keydown handler
@@ -965,7 +1340,7 @@ Select.prototype.focusHandler = function(ev) {
   // disable tabfocus once
   selectEl.tabIndex = -1;
   jqLite.one(wrapperEl, 'blur', function() {
-    selectEl.tabIndex = origIndex;
+    selectEl.tabIndex = tabIndex;
     jqLite.off(doc, 'keydown', keydownFn);
   });
   
@@ -978,8 +1353,10 @@ Select.prototype.focusHandler = function(ev) {
  * Handle keydown events on doc
  **/
 Select.prototype.keydownHandler = function(ev) {
+  var keyCode = ev.keyCode;
+
   // spacebar, down, up
-  if (ev.keyCode === 32 || ev.keyCode === 38 || ev.keyCode === 40) {
+  if (keyCode === 32 || keyCode === 38 || keyCode === 40) {
     // prevent win scroll
     ev.preventDefault();
     
@@ -1028,8 +1405,9 @@ function Menu(wrapperEl, selectEl) {
   util.enableScrollLock();
 
   // instance variables
-  this.origIndex = null;
-  this.currentIndex = null;
+  this.itemArray = [];
+  this.origPos = null;
+  this.currentPos = null;
   this.selectEl = selectEl;
   this.menuEl = this._createMenuEl(wrapperEl, selectEl);
   this.clickCallbackFn = util.callback(this, 'clickHandler');
@@ -1065,40 +1443,83 @@ function Menu(wrapperEl, selectEl) {
  */
 Menu.prototype._createMenuEl = function(wrapperEl, selectEl) {
   var menuEl = doc.createElement('div'),
-      optionEls = selectEl.children,
-      numOptions = optionEls.length,
+      childEls = selectEl.children,
+      itemArray = this.itemArray,
+      itemPos = 0,
       selectedPos = 0,
-      optionEl,
-      itemEl,
-      i;
+      selectedRow = 0,
+      loopEl,
+      rowEl,
+      optionEls,
+      inGroup,
+      i,
+      iMax,
+      j,
+      jMax;
 
   menuEl.className = menuClass;
 
-  // add options
-  for (i=0; i < numOptions; i++) {
-    optionEl = optionEls[i];
+  for (i=0, iMax=childEls.length; i < iMax; i++) {
+    loopEl = childEls[i];
 
-    itemEl = doc.createElement('div');
-    itemEl.textContent = optionEl.textContent;
-    itemEl._muiPos = i;
+    if (loopEl.tagName === 'OPTGROUP') {
+      // add row item to menu
+      rowEl = doc.createElement('div');
+      rowEl.textContent = loopEl.label;
+      rowEl.className = 'mui-optgroup__label';
+      menuEl.appendChild(rowEl);
 
-    if (optionEl.selected) {
-      itemEl.setAttribute('class', selectedClass);
-      selectedPos = i;
+      inGroup = true;
+      optionEls = loopEl.children;
+    } else {
+      inGroup = false;
+      optionEls = [loopEl];
     }
 
-    menuEl.appendChild(itemEl);
+    // loop through option elements
+    for (j=0, jMax=optionEls.length; j < jMax; j++) {
+      loopEl = optionEls[j];
+
+      // add row item to menu
+      rowEl = doc.createElement('div');
+      rowEl.textContent = loopEl.textContent;
+
+      // handle optgroup options
+      if (inGroup) jqLite.addClass(rowEl, 'mui-optgroup__option');
+
+      if (loopEl.disabled) {
+        // do not attach muiIndex to disable <option> elements to make them
+        // unselectable.
+        jqLite.addClass(rowEl, disabledClass);
+      } else {
+        rowEl._muiIndex = loopEl.index;
+        rowEl._muiPos = itemPos;
+
+        // handle selected options
+        if (loopEl.selected) {
+          jqLite.addClass(rowEl, selectedClass);
+          selectedRow = menuEl.children.length;
+          selectedPos = itemPos;
+        }
+
+        // add to item array
+        itemArray.push(rowEl);
+        itemPos += 1;
+      }
+
+      menuEl.appendChild(rowEl);
+    }
   }
 
   // save indices
-  this.origIndex = selectedPos;
-  this.currentIndex = selectedPos;
+  this.origPos = selectedPos;
+  this.currentPos = selectedPos;
 
   // set position
   var props = formlib.getMenuPositionalCSS(
     wrapperEl,
-    numOptions,
-    selectedPos
+    menuEl.children.length,
+    selectedRow
   );
 
   jqLite.css(menuEl, props);
@@ -1144,13 +1565,14 @@ Menu.prototype.clickHandler = function(ev) {
   // don't allow events to bubble
   ev.stopPropagation();
 
-  var pos = ev.target._muiPos;
+  var item = ev.target,
+      index = item._muiIndex;
 
   // ignore clicks on non-items                                               
-  if (pos === undefined) return;
+  if (index === undefined) return;
 
   // select option
-  this.currentIndex = pos;
+  this.currentPos = item._muiPos;
   this.selectCurrent();
 
   // destroy menu
@@ -1162,13 +1584,14 @@ Menu.prototype.clickHandler = function(ev) {
  * Increment selected item
  */
 Menu.prototype.increment = function() {
-  if (this.currentIndex === this.menuEl.children.length - 1) return;
+  if (this.currentPos === this.itemArray.length - 1) return;
 
-  var optionEls = this.menuEl.children;
-  
-  jqLite.removeClass(optionEls[this.currentIndex], selectedClass);
-  this.currentIndex += 1;
-  jqLite.addClass(optionEls[this.currentIndex], selectedClass);
+  // un-select old row
+  jqLite.removeClass(this.itemArray[this.currentPos], selectedClass);
+
+  // select new row
+  this.currentPos += 1;
+  jqLite.addClass(this.itemArray[this.currentPos], selectedClass);
 }
 
 
@@ -1176,13 +1599,14 @@ Menu.prototype.increment = function() {
  * Decrement selected item
  */
 Menu.prototype.decrement = function() {
-  if (this.currentIndex === 0) return;
+  if (this.currentPos === 0) return;
 
-  var optionEls = this.menuEl.children;
+  // un-select old row
+  jqLite.removeClass(this.itemArray[this.currentPos], selectedClass);
 
-  jqLite.removeClass(optionEls[this.currentIndex], selectedClass);
-  this.currentIndex -= 1;
-  jqLite.addClass(optionEls[this.currentIndex], selectedClass);
+  // select new row
+  this.currentPos -= 1;
+  jqLite.addClass(this.itemArray[this.currentPos], selectedClass);
 }
 
 
@@ -1190,10 +1614,8 @@ Menu.prototype.decrement = function() {
  * Select current item
  */
 Menu.prototype.selectCurrent = function() {
-  if (this.currentIndex !== this.origIndex) {
-    var optionEls = this.selectEl.children;
-    optionEls[this.origIndex].selected = false;
-    optionEls[this.currentIndex].selected = true;
+  if (this.currentPos !== this.origPos) {
+    this.selectEl.selectedIndex = this.itemArray[this.currentPos]._muiIndex;
 
     // trigger change event
     util.dispatchEvent(this.selectEl, 'change');
@@ -1212,7 +1634,7 @@ Menu.prototype.destroy = function() {
   this.selectEl.focus();
 
   // remove scroll lock
-  util.disableScrollLock();
+  util.disableScrollLock(true);
 
   // remove event handlers
   jqLite.off(this.menuEl, 'click', this.clickCallbackFn);
@@ -1240,410 +1662,7 @@ module.exports = {
   }
 };
 
-},{"../lib/forms":3,"../lib/jqLite":4,"../lib/util":5}],8:[function(require,module,exports){
-/**
- * MUI CSS/JS form-control module
- * @module forms/form-control
- */
-
-'use strict';
-
-
-var jqLite = require('../lib/jqLite'),
-    util = require('../lib/util'),
-    cssSelector = '.mui-textfield > input, .mui-textfield > textarea',
-    emptyClass = 'mui--is-empty',
-    notEmptyClass = 'mui--is-not-empty',
-    dirtyClass = 'mui--is-dirty',
-    floatingLabelClass = 'mui-textfield--float-label';
-
-
-/**
- * Initialize input element.
- * @param {Element} inputEl - The input element.
- */
-function initialize(inputEl) {
-  // check flag
-  if (inputEl._muiTextfield === true) return;
-  else inputEl._muiTextfield = true;
-
-  if (inputEl.value.length) jqLite.addClass(inputEl, notEmptyClass);
-  else jqLite.addClass(inputEl, emptyClass);
-
-  jqLite.on(inputEl, 'input', inputHandler);
-
-  // add dirty class on focus
-  jqLite.on(inputEl, 'focus', function(){jqLite.addClass(this, dirtyClass);});
-}
-
-
-/**
- * Handle input events.
- */
-function inputHandler() {
-  var inputEl = this;
-
-  if (inputEl.value.length) {
-    jqLite.removeClass(inputEl, emptyClass);
-    jqLite.addClass(inputEl, notEmptyClass);
-  } else {
-    jqLite.removeClass(inputEl, notEmptyClass);
-    jqLite.addClass(inputEl, emptyClass)
-  }
-
-  jqLite.addClass(inputEl, dirtyClass);
-}
-
-
-/** Define module API */
-module.exports = {
-  /** Initialize input elements */
-  initialize: initialize,
-  
-  /** Initialize module listeners */
-  initListeners: function() {
-    var doc = document;
-    
-    // markup elements available when method is called
-    var elList = doc.querySelectorAll(cssSelector);
-    for (var i=elList.length - 1; i >= 0; i--) initialize(elList[i]);
-
-    // listen for new elements
-    util.onNodeInserted(function(el) {
-      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') initialize(el);
-    });
-
-    // add transition css for floating labels
-    setTimeout(function() {
-      var css = '.mui-textfield.mui-textfield--float-label > label {' + [
-        '-webkit-transition',
-        '-moz-transition',
-        '-o-transition',
-        'transition',
-        ''
-      ].join(':all .15s ease-out;') + '}';
-      
-      util.loadStyle(css);
-    }, 150);
-
-    // pointer-events shim for floating labels
-    if (util.supportsPointerEvents() === false) {
-      jqLite.on(document, 'click', function(ev) {
-        var targetEl = ev.target;
-
-        if (targetEl.tagName === 'LABEL' &&
-            jqLite.hasClass(targetEl.parentNode, floatingLabelClass)) {
-          var inputEl = targetEl.previousElementSibling;
-          if (inputEl) inputEl.focus();
-        }
-      });
-    }
-  }
-};
-
-},{"../lib/jqLite":4,"../lib/util":5}],9:[function(require,module,exports){
-module.exports=require(4)
-},{}],10:[function(require,module,exports){
-/**
- * MUI CSS/JS overlay module
- * @module overlay
- */
-
-'use strict';
-
-
-var util = require('./lib/util'),
-    jqLite = require('./lib/jqLite'),
-    overlayId = 'mui-overlay',
-    bodyClass = 'mui--overflow-hidden',
-    iosRegex = /(iPad|iPhone|iPod)/g;
-
-
-/**
- * Turn overlay on/off.
- * @param {string} action - Turn overlay "on"/"off".
- * @param {object} [options]
- * @config {boolean} [keyboard] - If true, close when escape key is pressed.
- * @config {boolean} [static] - If false, close when backdrop is clicked.
- * @config {Function} [onclose] - Callback function to execute on close
- * @param {Element} [childElement] - Child element to add to overlay.
- */
-function overlayFn(action) {
-  var overlayEl;
-  
-  if (action === 'on') {
-    // extract arguments
-    var arg, options, childElement;
-    
-    // pull options and childElement from arguments
-    for (var i=arguments.length - 1; i > 0; i--) {
-      arg = arguments[i];
-
-      if (jqLite.type(arg) === 'object') options = arg;
-      if (arg instanceof Element && arg.nodeType === 1) childElement = arg;
-    }
-
-    // option defaults
-    options = options || {};
-    if (options.keyboard === undefined) options.keyboard = true;
-    if (options.static === undefined) options.static = false;
-    
-    // execute method
-    overlayEl = overlayOn(options, childElement);
-    
-  } else if (action === 'off') {
-    overlayEl = overlayOff();
-
-  } else {
-    // raise error
-    util.raiseError("Expecting 'on' or 'off'");
-  }
-
-  return overlayEl;
-}
-
-
-/**
- * Turn on overlay.
- * @param {object} options - Overlay options.
- * @param {Element} childElement - The child element.
- */
-function overlayOn(options, childElement) {
-  var bodyEl = document.body,
-      overlayEl = document.getElementById(overlayId);
-    
-  // add overlay
-  util.enableScrollLock();
-  //jqLite.addClass(bodyEl, bodyClass);
-
-  if (!overlayEl) {
-    // create overlayEl
-    overlayEl = document.createElement('div');
-    overlayEl.setAttribute('id', overlayId);
-    
-    // add child element
-    if (childElement) overlayEl.appendChild(childElement);
-
-    bodyEl.appendChild(overlayEl);
-    
-  } else {
-    // remove existing children
-    while (overlayEl.firstChild) overlayEl.removeChild(overlayEl.firstChild);
-    
-    // add child element
-    if (childElement) overlayEl.appendChild(childElement);
-  }
-
-  // iOS bugfix
-  if (iosRegex.test(navigator.userAgent)) {
-    jqLite.css(overlayEl, 'cursor', 'pointer');
-  }
-
-  // handle options
-  if (options.keyboard) addKeyupHandler();
-  else removeKeyupHandler();
-
-  if (options.static) removeClickHandler(overlayEl);
-  else addClickHandler(overlayEl);
-
-  // attach options
-  overlayEl.muiOptions = options;
-
-  return overlayEl;
-}
-
-
-/**
- * Turn off overlay.
- */
-function overlayOff() {
-  var overlayEl = document.getElementById(overlayId),
-      callbackFn;
-
-  if (overlayEl) {
-    // remove children
-    while (overlayEl.firstChild) overlayEl.removeChild(overlayEl.firstChild);
-
-    // remove overlay element
-    overlayEl.parentNode.removeChild(overlayEl);
-
-    // callback reference
-    callbackFn = overlayEl.muiOptions.onclose;
-
-    // remove click handler
-    removeClickHandler(overlayEl);
-  }
-
-  util.disableScrollLock();
-
-  // remove keyup handler
-  removeKeyupHandler();
-
-  // execute callback
-  if (callbackFn) callbackFn();
-
-  return overlayEl;
-}
-
-
-/**
- * Add keyup handler.
- */
-function addKeyupHandler() {
-  jqLite.on(document, 'keyup', onKeyup);
-}
-
-
-/**
- * Remove keyup handler.
- */
-function removeKeyupHandler() {
-  jqLite.off(document, 'keyup', onKeyup);
-}
-
-
-/**
- * Teardown overlay when escape key is pressed.
- */
-function onKeyup(ev) {
-  if (ev.keyCode === 27) overlayOff();
-}
-
-
-/**
- * Add click handler.
- */
-function addClickHandler(overlayEl) {
-  jqLite.on(overlayEl, 'click', onClick);
-}
-
-
-/**
- * Remove click handler.
- */
-function removeClickHandler(overlayEl) {
-  jqLite.off(overlayEl, 'click', onClick);
-}
-
-
-/**
- * Teardown overlay when backdrop is clicked.
- */
-function onClick(ev) {
-  if (ev.target.id === overlayId) overlayOff();
-}
-
-
-/** Define module API */
-module.exports = overlayFn;
-
-},{"./lib/jqLite":4,"./lib/util":5}],11:[function(require,module,exports){
-/**
- * MUI CSS/JS ripple module
- * @module ripple
- */
-
-'use strict';
-
-
-var jqLite = require('./lib/jqLite'),
-    util = require('./lib/util'),
-    btnClass = 'mui-btn',
-    btnFABClass = 'mui-btn--fab',
-    rippleClass = 'mui-ripple-effect',
-    animationName = 'mui-btn-inserted';
-
-
-/**
- * Add ripple effects to button element.
- * @param {Element} buttonEl - The button element.
- */
-function initialize(buttonEl) {
-  // check flag
-  if (buttonEl._muiRipple === true) return;
-  else buttonEl._muiRipple = true;
-
-  // exit if element is INPUT (doesn't support absolute positioned children)
-  if (buttonEl.tagName === 'INPUT') return;
-
-  // attach event handler
-  jqLite.on(buttonEl, 'touchstart', eventHandler);
-  jqLite.on(buttonEl, 'mousedown', eventHandler);
-}
-
-
-/**
- * Event handler
- * @param {Event} ev - The DOM event
- */
-function eventHandler(ev) {
-  // only left clicks
-  if (ev.button !== 0) return;
-
-  var buttonEl = this;
-
-  // exit if button is disabled
-  if (buttonEl.disabled === true) return;
-
-  // de-dupe touchstart and mousedown with 100msec flag
-  if (buttonEl.touchFlag === true) {
-    return;
-  } else {
-    buttonEl.touchFlag = true;
-    setTimeout(function() {
-      buttonEl.touchFlag = false;
-    }, 100);
-  }
-
-  var rippleEl = document.createElement('div');
-  rippleEl.className = rippleClass;
-
-  var offset = jqLite.offset(buttonEl),
-      xPos = ev.pageX - offset.left,
-      yPos = ev.pageY - offset.top,
-      diameter,
-      radius;
-
-  // get height
-  if (jqLite.hasClass(buttonEl, btnFABClass)) diameter = offset.height / 2;
-  else diameter = offset.height;
-
-  radius = diameter / 2;
-  
-  jqLite.css(rippleEl, {
-    height: diameter + 'px',
-    width: diameter + 'px',
-    top: yPos - radius + 'px',
-    left: xPos - radius + 'px'
-  });
-
-  buttonEl.appendChild(rippleEl);
-  
-  window.setTimeout(function() {
-    var parentNode = rippleEl.parentNode;
-    if (parentNode) parentNode.removeChild(rippleEl);
-  }, 2000);
-}
-
-
-/** Define module API */
-module.exports = {
-  /** Initialize module listeners */
-  initListeners: function() {
-    var doc = document;
-
-    // markup elements available when method is called
-    var elList = doc.getElementsByClassName(btnClass);
-    for (var i=elList.length - 1; i >= 0; i--) initialize(elList[i]);
-
-    // listen for new elements
-    util.onNodeInserted(function(el) {
-      if (jqLite.hasClass(el, btnClass)) initialize(el);
-    });
-  }
-};
-
-},{"./lib/jqLite":4,"./lib/util":5}],12:[function(require,module,exports){
+},{"./lib/forms":3,"./lib/jqLite":4,"./lib/util":5}],11:[function(require,module,exports){
 /**
  * MUI CSS/JS tabs module
  * @module tabs
@@ -1800,6 +1819,107 @@ module.exports = {
       }
 
       activateTab(toggleEl[0]);
+    }
+  }
+};
+
+},{"./lib/jqLite":4,"./lib/util":5}],12:[function(require,module,exports){
+/**
+ * MUI CSS/JS form-control module
+ * @module forms/form-control
+ */
+
+'use strict';
+
+
+var jqLite = require('./lib/jqLite'),
+    util = require('./lib/util'),
+    cssSelector = '.mui-textfield > input, .mui-textfield > textarea',
+    emptyClass = 'mui--is-empty',
+    notEmptyClass = 'mui--is-not-empty',
+    dirtyClass = 'mui--is-dirty',
+    floatingLabelClass = 'mui-textfield--float-label';
+
+
+/**
+ * Initialize input element.
+ * @param {Element} inputEl - The input element.
+ */
+function initialize(inputEl) {
+  // check flag
+  if (inputEl._muiTextfield === true) return;
+  else inputEl._muiTextfield = true;
+
+  if (inputEl.value.length) jqLite.addClass(inputEl, notEmptyClass);
+  else jqLite.addClass(inputEl, emptyClass);
+
+  jqLite.on(inputEl, 'input change', inputHandler);
+
+  // add dirty class on focus
+  jqLite.on(inputEl, 'focus', function(){jqLite.addClass(this, dirtyClass);});
+}
+
+
+/**
+ * Handle input events.
+ */
+function inputHandler() {
+  var inputEl = this;
+
+  if (inputEl.value.length) {
+    jqLite.removeClass(inputEl, emptyClass);
+    jqLite.addClass(inputEl, notEmptyClass);
+  } else {
+    jqLite.removeClass(inputEl, notEmptyClass);
+    jqLite.addClass(inputEl, emptyClass)
+  }
+
+  jqLite.addClass(inputEl, dirtyClass);
+}
+
+
+/** Define module API */
+module.exports = {
+  /** Initialize input elements */
+  initialize: initialize,
+  
+  /** Initialize module listeners */
+  initListeners: function() {
+    var doc = document;
+    
+    // markup elements available when method is called
+    var elList = doc.querySelectorAll(cssSelector);
+    for (var i=elList.length - 1; i >= 0; i--) initialize(elList[i]);
+
+    // listen for new elements
+    util.onNodeInserted(function(el) {
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') initialize(el);
+    });
+
+    // add transition css for floating labels
+    setTimeout(function() {
+      var css = '.mui-textfield.mui-textfield--float-label > label {' + [
+        '-webkit-transition',
+        '-moz-transition',
+        '-o-transition',
+        'transition',
+        ''
+      ].join(':all .15s ease-out;') + '}';
+      
+      util.loadStyle(css);
+    }, 150);
+
+    // pointer-events shim for floating labels
+    if (util.supportsPointerEvents() === false) {
+      jqLite.on(document, 'click', function(ev) {
+        var targetEl = ev.target;
+
+        if (targetEl.tagName === 'LABEL' &&
+            jqLite.hasClass(targetEl.parentNode, floatingLabelClass)) {
+          var inputEl = targetEl.previousElementSibling;
+          if (inputEl) inputEl.focus();
+        }
+      });
     }
   }
 };

@@ -26,7 +26,7 @@ var Radio = function (_React$Component) {
 
   function Radio() {
     babelHelpers.classCallCheck(this, Radio);
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Radio).apply(this, arguments));
+    return babelHelpers.possibleConstructorReturn(this, (Radio.__proto__ || Object.getPrototypeOf(Radio)).apply(this, arguments));
   }
 
   babelHelpers.createClass(Radio, [{
@@ -34,12 +34,25 @@ var Radio = function (_React$Component) {
     value: function render() {
       var _props = this.props;
       var children = _props.children;
-      var other = babelHelpers.objectWithoutProperties(_props, ['children']);
+      var className = _props.className;
+      var label = _props.label;
+      var autoFocus = _props.autoFocus;
+      var checked = _props.checked;
+      var defaultChecked = _props.defaultChecked;
+      var defaultValue = _props.defaultValue;
+      var disabled = _props.disabled;
+      var form = _props.form;
+      var name = _props.name;
+      var required = _props.required;
+      var value = _props.value;
+      var onChange = _props.onChange;
+      var reactProps = babelHelpers.objectWithoutProperties(_props, ['children', 'className', 'label', 'autoFocus', 'checked', 'defaultChecked', 'defaultValue', 'disabled', 'form', 'name', 'required', 'value', 'onChange']);
+
 
       return _react2.default.createElement(
         'div',
-        babelHelpers.extends({}, other, {
-          className: 'mui-radio ' + this.props.className
+        babelHelpers.extends({}, reactProps, {
+          className: 'mui-radio ' + className
         }),
         _react2.default.createElement(
           'label',
@@ -47,14 +60,18 @@ var Radio = function (_React$Component) {
           _react2.default.createElement('input', {
             ref: 'inputEl',
             type: 'radio',
-            name: this.props.name,
-            value: this.props.value,
-            checked: this.props.checked,
-            defaultChecked: this.props.defaultChecked,
-            disabled: this.props.disabled,
-            onChange: this.props.onChange
+            autoFocus: autoFocus,
+            checked: checked,
+            defaultChecked: defaultChecked,
+            defaultValue: defaultValue,
+            disabled: disabled,
+            form: form,
+            name: name,
+            required: required,
+            value: value,
+            onChange: onChange
           }),
-          this.props.label
+          label
         )
       );
     }
@@ -64,24 +81,13 @@ var Radio = function (_React$Component) {
 
 /** Define module API */
 
+
 Radio.propTypes = {
-  name: PropTypes.string,
-  label: PropTypes.string,
-  value: PropTypes.string,
-  checked: PropTypes.bool,
-  defaultChecked: PropTypes.bool,
-  disabled: PropTypes.bool,
-  onChange: PropTypes.func
+  label: PropTypes.string
 };
 Radio.defaultProps = {
   className: '',
-  name: null,
-  label: null,
-  value: null,
-  checked: null,
-  defaultChecked: null,
-  disabled: false,
-  onChange: null
+  label: null
 };
 exports.default = Radio;
 module.exports = exports['default'];

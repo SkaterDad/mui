@@ -1,94 +1,99 @@
-module.exports = angular.module('mui.dropdown', [])
-  .directive('muiDropdown', function($timeout, $compile) {
+/**
+ * MUI Angular Dropdown Component
+ * @module angular/dropdown
+ */
+
+import angular from 'angular';
+
+
+const moduleName = 'mui.dropdown';
+
+
+angular.module(moduleName, [])
+  .directive('muiDropdown', ['$timeout', '$compile', function($timeout, $compile) {
     return {
       restrict: 'AE',
       transclude: true,
       replace : true,
       scope: {
-        variant: '@', //['default', 'flat', 'raised', 'fab']
-        color: '@', //['default', 'primary', 'danger', 'dark','accent']
-        size: '@', //['default', 'small', 'large']
-        open: '=?', //open ?
-        disable: '=ngDisabled'
+        variant: '@',
+        color: '@',
+        size: '@',
+        open: '=?',
+        ngDisabled: '='
       },
       template: '<div class="mui-dropdown">' +
-                  '<mui-button variant="{{variant}}" ng-disabled="disable" color="{{color}}" '+
-                  'size="{{size}}"></mui-button>' +
-                  '<ul class="mui-dropdown__menu" ng-transclude></ul>'+
-                '</div>',
+        '<mui-button ' +
+        'variant="{{variant}}" ' + 
+        'color="{{color}}" ' +
+        'size="{{size}}" ' +
+        'ng-click="onClick($event);" ' +
+        '></mui-button>' +
+        '<ul class="mui-dropdown__menu" ng-transclude></ul>'+
+        '</div>',
       link: function(scope, element, attrs) {
         var dropdownClass = 'mui-dropdown',
-          menuClass = 'mui-dropdown__menu',
-          openClass = 'mui--is-open',
-          rightClass = 'mui-dropdown__menu--right',
-          $menu,$muiButton;
+            menuClass = 'mui-dropdown__menu',
+            openClass = 'mui--is-open',
+            rightClass = 'mui-dropdown__menu--right',
+            isUndef = angular.isUndefined,
+            menuEl,
+            buttonEl;
 
-        scope.open = scope.open || false;
-        if (!angular.isUndefined(attrs.disabled) && angular.isUndefined(attrs.ngDisabled)) {
-          scope.disable = true;
+        // save references
+        menuEl = angular.element(element[0].querySelector('.' + menuClass));
+        buttonEl = angular.element(element[0].querySelector('.mui-btn'));
+
+        menuEl.css('margin-top', '-3px');
+
+        // handle is-open
+        if (!isUndef(attrs.open)) scope.open = true;
+
+        // handle disabled
+        if (!isUndef(attrs.disabled)) {
+          buttonEl.attr('disabled', true);
         }
 
-        var _findMenuNode = function() {
-          return angular.element(element[0].querySelector('.' + menuClass));
-        };
-        $menu = _findMenuNode().css('margin-top', '-3px');
+        // handle right-align
+        if (!isUndef(attrs.rightAlign)) menuEl.addClass(rightClass);
 
-        //menu right
-        !angular.isUndefined(attrs.right) && $menu.addClass(rightClass);
+        // handle no-caret
+        if (!isUndef(attrs.noCaret)) buttonEl.html(attrs.label);
+        else buttonEl.html(attrs.label + ' <mui-caret></mui-caret>'); 
 
-        //html类型的 label
-        attrs.$observe('label', function() {
-          $muiButton = angular.element(element[0].querySelector('.mui-btn'));
-          if (!angular.isUndefined(attrs.nocaret)) {
-            $muiButton.html(attrs.label);
-          } else {
-            $muiButton.html(attrs.label + ' <mui-caret></mui-caret>');
+        function closeDropdownFn() {
+          scope.open = false;
+          scope.$apply();
+        }
+
+        // handle menu open
+        scope.$watch('open', function(newValue) {
+          if (newValue === true) {
+            menuEl.addClass(openClass);
+            document.addEventListener('click', closeDropdownFn);
+          } else if (newValue === false) {
+            menuEl.removeClass(openClass);
+            document.removeEventListener('click', closeDropdownFn);
           }
-          $compile($muiButton.children())(scope);
         });
 
-        scope.$watch('open', function() {
-          $menu = _findMenuNode();
-          scope.open ? $menu.addClass(openClass) : $menu.removeClass(openClass);
-        });
+        // click handler
+        scope.onClick = function($event) {
+          // exit if disabled
+          if (scope.disabled) return;
 
+          // prevent form submission
+          $event.preventDefault();
+          $event.stopPropagation();
 
-        var toggleEvent = function(event) {
-          var self = element[0].contains(event.target);
-          /**
-           * [_isLink description]
-           * @return {Boolean} [description]
-           */
-          var _isLink = function() {
-            var links = _findMenuNode()[0].querySelectorAll('a[href]'),
-              bool = false;
-            angular.forEach(links, function(link, index) {
-              link.contains(event.target) && (bool = true);
-            });
-            return bool;
-          };
-
-          scope.$apply(function() {
-            if (_isLink() || scope.disable) {
-              return;
-            }
-            if (!self) {
-              scope.open = false;
-            } else {
-              scope.open = !scope.open;
-            }
-          });
+          // toggle open 
+          if (scope.open) scope.open = false;
+          else scope.open = true;
         };
-
-        /**
-         * document mousedown event
-         */
-        angular.element(document).on('mousedown', toggleEvent);
-
-        scope.$on('$destroy', function() {
-          angular.element(document).off('mousedown', toggleEvent);
-        });
-
       }
     };
-  });
+  }]);
+
+
+/** Define module API */
+export default moduleName;

@@ -96,47 +96,73 @@
         <form>
           <div class="mui-checkbox">
             <label>
+              <input type="checkbox" value="" checked>
+              Active (Checked)
+            </label>
+          </div>
+
+          <div class="mui-checkbox">
+            <label>
               <input type="checkbox" value="">
-              Option one
+              Active (Unchecked)
+            </label>
+          </div>
+
+          <div class="mui-checkbox">
+            <label>
+              <input type="checkbox" value="" checked disabled>
+              Disabled (Checked)
             </label>
           </div>
 
           <div class="mui-checkbox">
             <label>
               <input type="checkbox" value="" disabled>
-              Option two is disabled
+              Disabled (Unchecked)
             </label>
           </div>
 
           <div class="mui-radio">
             <label>
               <input type="radio"
-                     name="optionsRadios"
+                     name="optionsRadios1"
                      id="optionsRadios1"
                      value="option1"
                      checked>
-              Option one
+              Active (Checked)
             </label>
           </div>
 
           <div class="mui-radio">
             <label>
               <input type="radio"
-                     name="optionsRadios"
+                     name="optionsRadios2"
                      id="optionsRadios2"
                      value="option2">
-              Option two
+              Active (Unchecked)
             </label>
           </div>
 
           <div class="mui-radio">
             <label>
               <input type="radio"
-                     name="optionsRadios"
+                     name="optionsRadios3"
+                     id="optionsRadios3"
+                     value="option3"
+                     checked
+                     disabled>
+              Disabled (Checked)
+            </label>
+          </div>
+
+          <div class="mui-radio">
+            <label>
+              <input type="radio"
+                     name="optionsRadios4"
                      id="optionsRadios3"
                      value="option3"
                      disabled>
-              Option three is disabled
+              Disabled (Unchecked)
             </label>
           </div>
         </form>
@@ -219,35 +245,35 @@
 
         <h3>Manual Form Validation</h3>
         <form>
-          <div class="mui-textfield mui-textfield--invalid">
-            <input type="text" placeholder="Email address">
+          <div class="mui-textfield">
+            <input class="mui--is-invalid" type="text" placeholder="Email address">
           </div>
-          <div class="mui-textfield mui-textfield--invalid">
-            <input type="text">
+          <div class="mui-textfield">
+            <input class="mui--is-invalid" type="text">
             <label>Email address</label>
           </div>
-          <div class="mui-textfield mui-textfield--float-label mui-textfield--invalid">
-            <input type="text" value="err">
+          <div class="mui-textfield mui-textfield--float-label">
+            <input class="mui--is-invalid" type="text" value="err">
             <label>Email address</label>
           </div>
-          <div class="mui-textfield mui-textfield--float-label mui-textfield--invalid">
-            <input type="text">
+          <div class="mui-textfield mui-textfield--float-label">
+            <input class="mui--is-invalid" type="text">
             <label>Text *</label>
           </div>
-          <div class="mui-textfield mui-textfield--float-label mui-textfield--invalid">
-            <input type="text">
+          <div class="mui-textfield mui-textfield--float-label">
+            <input class="mui--is-invalid" type="text">
             <label>Email address *</label>
           </div>
-          <div class="mui-textfield mui-textfield--invalid">
-            <input type="text">
+          <div class="mui-textfield">
+            <input class="mui--is-invalid" type="text">
             <label>Email address *</label>
           </div>
-          <div class="mui-textfield mui-textfield--float-label mui-textfield--invalid">
-            <input type="text" value="err">
+          <div class="mui-textfield mui-textfield--float-label">
+            <input class="mui--is-invalid" type="text" value="err">
             <label>Email address *</label>
           </div>
-          <div class="mui-textfield mui-textfield--invalid">
-            <input type="text" value="err" placeholder="Email address *">
+          <div class="mui-textfield">
+            <input class="mui--is-invalid" type="text" value="err" placeholder="Email address *">
           </div>
           <button class="mui-btn">submit</button>
         </form>

@@ -24,6 +24,7 @@ var _util = require('../js/lib/util');
 
 var util = babelHelpers.interopRequireWildcard(_util);
 
+
 var PropTypes = _react2.default.PropTypes,
     tabsBarClass = 'mui-tabs__bar',
     tabsBarJustifiedClass = 'mui-tabs__bar--justified',
@@ -41,7 +42,7 @@ var Tabs = function (_React$Component) {
   function Tabs(props) {
     babelHelpers.classCallCheck(this, Tabs);
 
-    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Tabs).call(this, props));
+    var _this = babelHelpers.possibleConstructorReturn(this, (Tabs.__proto__ || Object.getPrototypeOf(Tabs)).call(this, props));
 
     _this.state = { currentSelectedIndex: props.initialSelectedIndex };
     return _this;
@@ -67,16 +68,19 @@ var Tabs = function (_React$Component) {
     value: function render() {
       var _props = this.props;
       var children = _props.children;
-      var other = babelHelpers.objectWithoutProperties(_props, ['children']);
+      var initialSelectedIndex = _props.initialSelectedIndex;
+      var justified = _props.justified;
+      var reactProps = babelHelpers.objectWithoutProperties(_props, ['children', 'initialSelectedIndex', 'justified']);
+
 
       var tabEls = [],
           paneEls = [],
           m = children.length,
           selectedIndex = this.state.currentSelectedIndex % m,
-          isActive = undefined,
-          item = undefined,
-          cls = undefined,
-          i = undefined;
+          isActive = void 0,
+          item = void 0,
+          cls = void 0,
+          i = void 0;
 
       for (i = 0; i < m; i++) {
         item = children[i];
@@ -109,11 +113,11 @@ var Tabs = function (_React$Component) {
       }
 
       cls = tabsBarClass;
-      if (this.props.justified) cls += ' ' + tabsBarJustifiedClass;
+      if (justified) cls += ' ' + tabsBarJustifiedClass;
 
       return _react2.default.createElement(
         'div',
-        other,
+        reactProps,
         _react2.default.createElement(
           'ul',
           { className: cls },
@@ -127,6 +131,7 @@ var Tabs = function (_React$Component) {
 }(_react2.default.Component);
 
 /** Define module API */
+
 
 Tabs.propTypes = {
   initialSelectedIndex: PropTypes.number,

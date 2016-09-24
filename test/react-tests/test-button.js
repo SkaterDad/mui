@@ -81,18 +81,42 @@ describe('react/button', function() {
   });
 
 
-  it('supports click callbacks', function(done) {
-    // define callback
-    let fn = function() {
-      done();
-    }
+  it('supports click, mouse and touch events', function() {
+    let executedEvents = [],
+        triggeredEvents = [];
 
-    let node = ReactUtils.renderIntoDocument(
-      <Button onClick={ fn }>test</Button>
+    // define callback
+    const fn = function(ev) {executedEvents.push(ev.type);};
+
+    // define props
+    const props = {
+      onClick: fn,
+      onMouseDown: fn,
+      onMouseUp: fn,
+      onMouseLeave: fn,
+      onTouchStart: fn,
+      onTouchEnd: fn
+    };
+
+    const node = ReactUtils.renderIntoDocument(
+      <Button { ...props }>test</Button>
     );
 
-    // click on button
-    ReactUtils.Simulate.click(node.refs.buttonEl);
+    // trigger events
+    let k, eventName, eventType;
+
+    for (k in props) {
+      // remove 'on' and lowercase first letter
+      eventName = k.charAt(2).toLowerCase() + k.substr(3, k.length);
+      eventType = eventName.toLowerCase();
+
+      // trigger event
+      ReactUtils.Simulate[eventName](node.refs.buttonEl, {type: eventType});
+      triggeredEvents.push(eventType);
+    }
+
+    // check that events were executed
+    assert.deepEqual(triggeredEvents, executedEvents);
   });
 
 
@@ -102,15 +126,15 @@ describe('react/button', function() {
 
     // check state before ripple
     assert.equal(Object.keys(node.state.ripples).length, 0);
-    assert.equal(buttonEl.children.length, 1);
+    assert.equal(buttonEl.children.length, 0);
 
     // trigger ripple
     ReactUtils.Simulate.mouseDown(buttonEl);
 
     // check state after ripple
     assert.equal(Object.keys(node.state.ripples).length, 1);
-    assert.equal(buttonEl.children.length, 2);
-    assert.equal(buttonEl.children[1].className, 'mui-ripple-effect');
+    assert.equal(buttonEl.children.length, 1);
+    assert.equal(buttonEl.children[0].className, 'mui-ripple-effect');
 
     // add another ripple
     ReactUtils.Simulate.mouseDown(node.refs.buttonEl);
@@ -118,23 +142,24 @@ describe('react/button', function() {
   });
 
 
-  it('removes ripples after two seconds', function(done) {
-    this.timeout(2050);
+  it('removes ripples after mouseup and animation duration', function(done) {
+    this.timeout(700);
 
     let node = ReactUtils.renderIntoDocument(<Button>test</Button>);
 
     ReactUtils.Simulate.mouseDown(node.refs.buttonEl);
+    ReactUtils.Simulate.mouseUp(node.refs.buttonEl);
     assert.equal(Object.keys(node.state.ripples).length, 1);
 
     setTimeout(function() {
       // check that ripple is still there
       assert.equal(Object.keys(node.state.ripples).length, 1);
-    }, 1000);
+    }, 500);
 
     setTimeout(function() {
       // check that ripple has been removed
       assert.equal(Object.keys(node.state.ripples).length, 0);
       done();
-    }, 2001);
+    }, 601);
   });
 });

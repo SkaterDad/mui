@@ -36,6 +36,7 @@ class Dropdown extends React.Component {
     }
 
     let cb = util.callback;
+    this.selectCB = cb(this, 'select');
     this.onClickCB = cb(this, 'onClick');
     this.onOutsideClickCB = cb(this, 'onOutsideClick');
   }
@@ -45,9 +46,13 @@ class Dropdown extends React.Component {
       'accent']),
     variant: PropTypes.oneOf(['default', 'flat', 'raised', 'fab']),
     size: PropTypes.oneOf(['default', 'small', 'large']),
-    label: PropTypes.string,
+    label: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.element
+    ]),
     alignMenu: PropTypes.oneOf(['left', 'right']),
     onClick: PropTypes.func,
+    onSelect: PropTypes.func,
     disabled: PropTypes.bool
   };
 
@@ -59,10 +64,11 @@ class Dropdown extends React.Component {
     label: '',
     alignMenu: 'left',
     onClick: null,
+    onSelect: null,
     disabled: false
   };
 
-  componentWillMount() {
+  componentDidMount() {
     document.addEventListener('click', this.onOutsideClickCB);
   }
 
@@ -77,7 +83,13 @@ class Dropdown extends React.Component {
     // exit if toggle button is disabled
     if (this.props.disabled) return;
 
-    if (!ev.defaultPrevented) this.toggle();
+    if (!ev.defaultPrevented) {
+      this.toggle();
+
+      // execute <Dropdown> onClick method
+      let onClickFn = this.props.onClick;
+      onClickFn && onClickFn(ev);
+    }
   }
 
   toggle() {
@@ -107,8 +119,14 @@ class Dropdown extends React.Component {
     this.setState({opened: false});
   }
 
-  select() {
-    if (this.props.onClick) this.props.onClick(this, ev);
+  select(ev) {
+    // onSelect callback
+    if (this.props.onSelect && ev.target.tagName === 'A') {
+      this.props.onSelect(ev.target.getAttribute('data-mui-value'));
+    }
+
+    // close menu
+    if (!ev.defaultPrevented) this.close();
   }
 
   onOutsideClick(ev) {
@@ -118,20 +136,30 @@ class Dropdown extends React.Component {
 
   render() {
     let buttonEl,
-        menuEl;
+        menuEl,
+        labelEl;
+
+    const { children, className, color, variant, size, label, alignMenu,
+      onClick, onSelect, disabled, ...reactProps } = this.props;
+
+    // build label
+    if (jqLite.type(label) === 'string') {
+      labelEl = <span>{label} <Caret /></span>;
+    } else {
+      labelEl = label;
+    }
 
     buttonEl = (
       <Button
         ref="button"
         type="button"
         onClick={this.onClickCB}
-        color={this.props.color}
-        variant={this.props.variant}
-        size={this.props.size}
-        disabled={this.props.disabled}
+        color={color}
+        variant={variant}
+        size={size}
+        disabled={disabled}
       >
-        {this.props.label}
-        <Caret />
+        {labelEl}
       </Button>
     );
 
@@ -140,26 +168,26 @@ class Dropdown extends React.Component {
 
       cs[menuClass] = true;
       cs[openClass] = this.state.opened;
-      cs[rightClass] = (this.props.alignMenu === 'right');
+      cs[rightClass] = (alignMenu === 'right');
       cs = util.classNames(cs);
 
       menuEl = (
         <ul
           ref="menuEl"
           className={cs}
-          style={{top: this.state.menuTop} }
+          style={{top: this.state.menuTop}}
           onClick={this.selectCB}
         >
-          {this.props.children}
+          {children}
         </ul>
       );
+    } else {
+      menuEl = <div></div>;
     }
-
-    let { ref, className, children, ...other } = this.props;
 
     return (
       <div
-        { ...other }
+        { ...reactProps }
         ref="wrapperEl"
         className={dropdownClass + ' ' + className}
       >

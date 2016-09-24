@@ -26,7 +26,7 @@ class Select extends React.Component {
 
     // warn if value defined but onChange is not
     if (props.readOnly === false &&
-        props.value !== null &&
+        props.value !== undefined &&
         props.onChange === null) {
       util.raiseError(controlledMessage, true);
     }
@@ -47,34 +47,22 @@ class Select extends React.Component {
   }
 
   state = {
-    value: null,
     showMenu: false
   };
 
   static propTypes = {
-    name: PropTypes.string,
+    label: PropTypes.string,
     value: PropTypes.string,
     defaultValue: PropTypes.string,
-    autoFocus: PropTypes.bool,
-    disabled: PropTypes.bool,
-    multiple: PropTypes.bool,
     readOnly: PropTypes.bool,
-    required: PropTypes.bool,
     useDefault: PropTypes.bool,
     onChange: PropTypes.func
   };
 
   static defaultProps = {
     className: '',
-    name: null,
-    value: null,
-    defaultValue: null,
-    autoFocus: false,
-    disabled: false,
-    multiple: false,
     readOnly: false,
-    required: false,
-    useDefault: false,
+    useDefault: ('ontouchstart' in document.documentElement) ? true : false,
     onChange: null
   };
 
@@ -96,19 +84,28 @@ class Select extends React.Component {
   onInnerMouseDown(ev) {
     if (ev.button !== 0 || this.props.useDefault === true) return;
     ev.preventDefault();
+
+    // execute callback
+    const fn = this.props.onMouseDown;
+    fn && fn(ev);
   }
 
   onInnerChange(ev) {
     let value = ev.target.value;
     this.setState({ value });
 
-    let fn = this.props.onChange;
-    if (fn) fn(value);
+    // execute callback
+    const fn = this.props.onChange;
+    fn && fn(value);
   }
 
   onInnerClick(ev) {
     if (ev.button !== 0) return;  // only left clicks
     this.showMenu();
+
+    // execute callback
+    const fn = this.props.onClick;
+    fn && fn(ev);
   }
 
   onInnerFocus(ev) {
@@ -133,6 +130,10 @@ class Select extends React.Component {
 
     // attach keydown handler
     jqLite.on(document, 'keydown', this.onKeydownCB);
+
+    // execute callback
+    const fn = this.onFocus;
+    fn && fn(ev);
   }
 
   onOuterBlur(ev) {
@@ -145,6 +146,10 @@ class Select extends React.Component {
 
     // remove keydown handler
     jqLite.off(document, 'keydown', this.onKeydownCB);
+
+    // execute callback
+    const fn = this.onBlur;
+    fn && fn(ev);
   }
 
   onKeydown(ev) {
@@ -174,7 +179,7 @@ class Select extends React.Component {
 
   hideMenu() {
     // remove scroll lock
-    util.disableScrollLock();
+    util.disableScrollLock(true);
 
     // remove event listeners
     jqLite.off(window, 'resize', this.hideMenuCB);
@@ -211,32 +216,31 @@ class Select extends React.Component {
       );
     }
 
-    let { children, onChange, ...other } = this.props;
+    const { children, className, style, label, defaultValue, readOnly,
+      useDefault, ...reactProps } = this.props;
 
     return (
       <div
-        { ...other }
         ref="wrapperEl"
-        className={'mui-select ' + this.props.className}
+        style={style}
+        className={'mui-select ' + className}
         onFocus={this.onOuterFocusCB}
         onBlur={this.onOuterBlurCB}
       >
         <select
+          { ...reactProps }
           ref="selectEl"
-          name={this.props.name}
           value={this.state.value}
-          defaultValue={this.props.defaultValue}
-          disabled={this.props.disabled}
-          multiple={this.props.multiple}
+          defaultValue={defaultValue}
           readOnly={this.props.readOnly}
-          required={this.props.required}
           onChange={this.onInnerChangeCB}
           onMouseDown={this.onInnerMouseDownCB}
           onClick={this.onInnerClickCB}
           onFocus={this.onInnerFocusCB}
         >
-          {this.props.children}
+          {children}
         </select>
+        <label>{label}</label>
         {menuElem}
       </div>
     );
@@ -280,7 +284,7 @@ class Menu extends React.Component {
 
   componentDidMount() {
     // blur active element (IE10 bugfix)
-    setTimeout(function() {
+    this.blurTimer = setTimeout(function() {
       let el = document.activeElement;
       if (el.nodeName.toLowerCase() !== 'body') el.blur();
     }, 0);
@@ -301,6 +305,9 @@ class Menu extends React.Component {
   }
 
   componentWillUnmount() {
+    // clear timer
+    clearTimeout(this.blurTimer);
+    
     // remove keydown handler
     jqLite.off(document, 'keydown', this.onKeydownCB);
   }
@@ -367,7 +374,10 @@ class Menu extends React.Component {
 
     // define menu items
     for (i=0; i < m; i++) {
-      cls = (i === this.state.currentIndex) ? 'mui--is-selected' : '';
+      cls = (i === this.state.currentIndex) ? 'mui--is-selected ' : '';
+
+      // add custom css class from <Option> component
+      cls += optionEls[i].className;
 
       menuItems.push(
         <div

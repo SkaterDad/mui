@@ -1,4 +1,15 @@
-module.exports = angular.module('mui.divider', [])
+/**
+ * MUI Angular Divider Component
+ * @module angular/divider
+ */
+
+import angular from 'angular';
+
+
+const moduleName = 'mui.divider';
+
+
+angular.module(moduleName, [])
   .directive('muiDivider', function() {
     return {
       restrict: 'AE',
@@ -8,3 +19,7 @@ module.exports = angular.module('mui.divider', [])
       }
     }
   });
+
+
+/** Define module API */
+export default moduleName;

@@ -1,167 +1,287 @@
-var formlib = require('../js/lib/forms');
-var util = require('../js/lib/util');
-var jqLite = require('../js/lib/jqLite');
-module.exports = angular.module('mui.select', [])
-  .directive('muiSelect', function() {
+/**
+ * MUI Angular Select Component
+ * @module angular/select
+ */
+
+import angular from 'angular';
+
+import * as formlib from '../js/lib/forms';
+import * as util from '../js/lib/util';
+import * as jqLite from '../js/lib/jqLite';
+
+
+const moduleName = 'mui.select';
+
+
+angular.module(moduleName, [])
+  .directive('muiSelect', ['$timeout', function($timeout) {
     return {
       restrict: 'AE',
-      require: ['?ngModel'],
+      require: ['ngModel'],
       scope: {
-        disable : '=',
-        innerInput: '=?ngModel'
+        label: '@',
+        name: '@',
+        ngDisabled: '=',
+        ngModel: '='
       },
       replace: true,
       transclude: true,
-      template: '<div class="mui-select">' +
-        '<select ng-model="innerInput" ng-disabled="disable" ng-transclude>' +
+      template: '<div class="mui-select" ' +
+        'ng-blur="onWrapperBlur()" ' +
+        'ng-focus="onWrapperFocus($event)" ' +
+        'ng-keydown="onWrapperKeydown($event)">' +
+        '<select ' +
+        'name="{{name}}" ' +
+        'ng-click="onClick()" ' +
+        'ng-disabled="ngDisabled" ' +
+        'ng-focus="onFocus()" ' +
+        'ng-model="ngModel" ' +
+        'ng-mousedown="onMousedown($event)" ' +
+        '>' +
+        '<option ng-repeat="option in options" value="{{option.value}}">{{option.label}}</option>' +
         '</select>' +
-        '<div ng-show="_menuIsShow" class="mui-select__menu">' +
-          '<div ng-click="select($index)" ng-repeat="option in options track by $index" ng-class=\'{"mui--is-selected" : option.value == innerInput}\'>{{option.label}}</div>' +
+        '<label>{{label}}</label>' +
+        '<div ' +
+        'class="mui-select__menu"' +
+        'ng-show="!useDefault && isOpen"> ' +
+        '<div ' +
+        'ng-click="chooseOption(option)" ' +
+        'ng-repeat="option in options track by $index" ' +
+        'ng-class=\'{"mui--is-selected": $index === menuIndex}\'>{{option.label}}</div>' +
         '</div>' +
         '</div>',
-      link: function(scope, element, attrs, controller) {
-        var options = scope.options,
-          showMenuFn, hideMenuFn,onKeydown,
-          increment , decrement ,revertAndHideMenu,
-          getMenuPosition, css,cacheIndex,
-          $menu = angular.element(element[0].querySelector('.mui-select__menu')),
-          $select = element.find('select');
+      link: function(scope, element, attrs, controller, transcludeFn) {
+        var wrapperEl = element,
+            menuEl = element.find('div'),
+            selectEl = element.find('select'),
+            isUndef = angular.isUndefined,
+            cacheIndex;
 
-        scope._menuIsShow = false;
+        // disable MUI js
+        selectEl[0]._muiSelect = true;
+
+        // init scope
+        scope.options = [];
+        scope.isOpen = false;
+        scope.useDefault = ('ontouchstart' in document.documentElement) 
+          ? true : false;
+        scope.origTabIndex = selectEl[0].tabIndex;
+        scope.menuIndex = 0;
+
+        // handle `use-default` attribute
+        if (!isUndef(attrs.useDefault)) scope.useDefault = true;
+
+        // make wrapper focusable
+        wrapperEl.prop('tabIndex', -1);
+
+        // extract <option> elements from children
+        transcludeFn(function(clone) {
+          var el, k;
+
+          // iterate through children
+          for (k in clone) {
+            el = clone[k];
+
+            // add option to scope
+            if (el.tagName === 'MUI-OPTION') {
+              scope.options.push({
+                value: el.getAttribute('value'),
+                label: el.getAttribute('label')
+              });
+            }
+          }
+        });
+
 
         /**
-         * 获取菜单位置
-         * @return {Object} 菜单位置 height,top,scrollTop
+         * Handle click event on <select> element.
          */
-        getMenuPosition = function() {
-          return formlib.getMenuPositionalCSS(
-            element[0],
-            options.length,
-            scope._currentIndex || 0
-          );
+        scope.onClick = function() {
+          // check flag
+          if (scope.useDefault === true) return;
+
+          // open menu
+          scope.isOpen = true;
+
+          // defer focus
+          wrapperEl[0].focus();
         };
 
-        // 显示菜单
-        showMenuFn = function(e) {
-          e && e.preventDefault();
-          cacheIndex = scope._currentIndex;
-          element.find('select')[0].focus();
-          util.enableScrollLock();
-          css = getMenuPosition();
-          $menu.css('height', css.height)
-            .css('top', css.top);
-          scope.$apply(function() {
-            scope._menuIsShow = true;
-          });
+
+        /**
+         * Handle focus event on <select> element.
+         */
+        scope.onFocus = function() {
+          // check flag
+          if (scope.useDefault === true) return;
+
+          // disable tabfocus once
+          var el = selectEl[0];
+          scope.origTabIndex = el.tabIndex;
+          el.tabIndex = -1;
+
+          // defer focus to parent
+          wrapperEl[0].focus();
         };
 
-        //隐藏菜单
-        hideMenuFn = function(e) {
-          scope.$apply(function() {
-            scope._menuIsShow = false;
-            util.disableScrollLock();
-          });
+
+        /**
+         * Handle mousedown event on <select> element
+         */
+        scope.onMousedown = function($event) {
+          // check flag
+          if (scope.useDefault === true) return;
+
+          // cancel default menu
+          $event.preventDefault();
+        };
+
+
+        /**
+         * Handle blur event on wrapper element.
+         */
+        scope.onWrapperBlur = function() {
+          // replace select element tab index
+          selectEl[0].tabIndex = scope.origTabIndex;
+        };
+
+
+        /**
+         * Handle focus event on wrapper element.
+         * @param {Event} $event - Angular event instance
+         */
+        scope.onWrapperFocus = function($event) {
+          // firefox bugfix
+          if (selectEl[0].disabled) return wrapperEl[0].blur();
+        };
+
+
+        /**
+         * Handle keydown event on wrapper element.
+         * @param {Event} $event - Angular event instance
+         */
+        scope.onWrapperKeydown = function($event) {
+          var keyCode = $event.keyCode;
+
+          if (scope.isOpen === false) {
+            // spacebar, down, up
+            if (keyCode === 32 || keyCode === 38 || keyCode === 40) {
+              // prevent win scroll
+              $event.preventDefault();
+
+              // open menu
+              scope.isOpen = true;
+            }
+
+          } else {
+            // tab
+            if (keyCode === 9) return scope.isOpen = false;
+
+            // escape | up | down | enter
+            if (keyCode === 27 
+                || keyCode === 40
+                || keyCode === 38
+                || keyCode === 13) {
+              $event.preventDefault();
+            }
+
+            if (keyCode === 27) {
+              // close
+              scope.isOpen = false;
+            } else if (keyCode === 40) {
+              // increment
+              if (scope.menuIndex < scope.options.length - 1) {
+                scope.menuIndex += 1;
+              }
+            } else if (keyCode === 38) {
+              // decrement
+              if (scope.menuIndex > 0) scope.menuIndex -= 1;
+            } else if (keyCode === 13) {
+              // choose and close
+              scope.ngModel = scope.options[scope.menuIndex].value;  
+              scope.isOpen = false;
+            }
+
+          }
+        };
+
+
+        /**
+         * Choose option the user selected.
+         * @param {Object} option - The option selected.
+         */
+        scope.chooseOption = function(option) {
+          scope.ngModel = option.value;
+          scope.isOpen = false;
+        };
+        
+
+        // function to close menu on window resize and document click
+        function closeMenuFn() {
+          scope.isOpen = false;
+          scope.$digest();
         }
 
-        increment = function() {
-          if(!scope._menuIsShow){
-            showMenuFn();
-          }
-          else if(scope._currentIndex < options.length-1){
-            scope.$apply(function() {
-              scope._currentIndex++;
+        
+        /**
+         * Open/Close custom select menu
+         */
+        scope.$watch('isOpen', function(isOpen, oldVal) {
+          // ignore first call
+          if (isOpen === oldVal) return;
+
+          // exit if use-default is true
+          if (scope.useDefault === true) return;
+
+          if (isOpen === true) {
+            // enable scroll lock
+            util.enableScrollLock();
+
+            // init menuIndex
+            var value = scope.ngModel,
+                options = scope.options,
+                m = options.length,
+                i;
+
+            for (i=0; i < m; i++) {
+              if (options[i].value === value) {
+                scope.menuIndex = i;
+                break;
+              }
+            }
+
+            // set position of custom menu
+            var props = formlib.getMenuPositionalCSS(
+              element[0],
+              scope.options.length,
+              scope.menuIndex
+            );
+
+            menuEl.css(props);
+            jqLite.scrollTop(menuEl[0], props.scrollTop);
+
+            // attach event handlers
+            $timeout(function() {
+              jqLite.on(document, 'click', closeMenuFn);
+              jqLite.on(window, 'resize', closeMenuFn);
             });
-          }
-        };
 
-        decrement = function() {
-          if(!scope._menuIsShow){
-            showMenuFn();
-          }
-          else if(scope._currentIndex > 0){
-            scope.$apply(function() {
-              scope._currentIndex--;
-            });
-          }
-        };
+          } else {
+            // focus select element
+            selectEl[0].focus();
 
-        revertAndHideMenu = function() {
-          if(scope._menuIsShow){
-              scope.select(cacheIndex);
-              hideMenuFn();
-          }
-        }
+            // disable scroll lock
+            util.disableScrollLock(true);
 
-        onKeydown = function(ev) {
-          var keyCode = ev.keyCode;
-          // escape | up | down | enter
-          if (keyCode === 27 || keyCode === 40 || keyCode === 38 || keyCode === 13) {
-            ev.preventDefault();
+            // remove event handlers
+            jqLite.off(document, 'click', closeMenuFn);
+            jqLite.off(window, 'resize', closeMenuFn);
           }
-
-          if (keyCode === 27 || keyCode === 9) {
-            revertAndHideMenu();
-          } else if (keyCode === 40) {
-            increment();
-          } else if (keyCode === 38) {
-            decrement();
-          } else if (keyCode === 13) {
-            hideMenuFn();
-          }
-        }
-
-        scope.$watch('_currentIndex',function(newIndex) {
-          if(newIndex === undefined) return;
-          scope.innerInput = options[newIndex].value;
         });
-
-        scope.select = function(index) {
-          scope.innerInput = options[index].value;
-          scope._currentIndex = index;
-          scope._menuIsShow = false;
-          util.disableScrollLock();
-        }
-
-        $select.on('mousedown', showMenuFn);
-        element.on('keydown', onKeydown);// add event listeners
-        jqLite.on(window, 'resize', revertAndHideMenu);
-        jqLite.on(document, 'click', revertAndHideMenu);
-
-        scope.$on('$destroy',function() {
-          $select.off('mousedown', showMenuFn);
-          element.off('keydown', onKeydown);
-          jqLite.off(window, 'resize', revertAndHideMenu);
-          jqLite.off(document, 'click', revertAndHideMenu);
-        });
-
-      },
-      controller: function($scope) {
-        var options = $scope.options = [];
-        this.addOption = function(option) {
-          if(!$scope.innerInput && options.length === 0){
-            $scope._currentIndex = 0;
-            $scope.innerInput = option.value;
-          }
-          if (option.value == $scope.innerInput) {
-            $scope._currentIndex = options.length;
-          }
-          options.push(option);
-        }
       }
     }
-  })
-  .directive('muiOption', function() {
-    return {
-      require: '^muiSelect',
-      restrict: 'AE',
-      scope: {
-        value: '@',
-        label: '@'
-      },
-      replace: true,
-      template: '<option value={{value}} >{{label}}</option>',
-      link: function(scope, element, attrs, selectCtrl) {
-        selectCtrl.addOption(scope);
-      }
-    }
-  });
+  }]);
+
+
+/** Define module API */
+export default moduleName;

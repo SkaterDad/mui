@@ -1,109 +1,159 @@
-var inputFactory = function(isTextArea) {
-  var scope = {
-    innerInput: '=?ngModel',
-    floatingLabel: '@',
-    type: '@',
+/**
+ * MUI Angular Input and Textarea Components
+ * @module angular/input
+ */
+
+import angular from 'angular';
+
+
+const moduleName = 'mui.input',
+      emptyClass = 'mui--is-empty',
+      notEmptyClass = 'mui--is-not-empty',
+      dirtyClass = 'mui--is-dirty';
+
+
+/**
+ * Handle empty/not-empty/dirty classes.
+ * @param {Element} elem - The angular-wrapped DOM element.
+ */
+function handleEmptyClasses(inputEl, value) {
+  if (value) inputEl.removeClass(emptyClass).addClass(notEmptyClass);
+  else inputEl.removeClass(notEmptyClass).addClass(emptyClass);
+}
+
+
+/**
+ * Build directive function.
+ * @param {Boolean} isTextArea
+ */
+function inputFactory(isTextArea) {
+  var emptyClass = 'mui--is-empty',
+      notEmptyClass = 'mui--is-not-empty',
+      dirtyClass = 'mui--is-dirty',
+      scopeArgs,
+      template;
+
+  // defaults
+  scopeArgs = {
+    floatLabel: '@',
     hint: '@',
     label: '@',
-    ngChange: '&'
+    ngDisabled: '=',
+    ngModel: '='
   };
 
-  isTextArea && (scope.rows = '@');
+  template = '<div class="mui-textfield">';
 
-  /**
-   * directive factory
-   */
-  return ['$compile', '$timeout', function($compile, $timeout) {
+  // element-specific
+  if (!isTextArea) {
+    scopeArgs.type = '@';
+
+    template += '<input ' + 
+      'placeholder={{hint}} ' +
+      'type={{type}} ' +
+      'ng-change="onChange()" ' +
+      'ng-disabled="ngDisabled" ' +
+      'ng-focus="onFocus()" ' +
+      'ng-model="ngModel" ' +
+      '>';
+  } else {
+    scopeArgs.rows = '@';
+
+    template += '<textarea ' +
+      'placeholder={{hint}} ' +
+      'rows={{rows}} ' +
+      'ng-change="onChange()" ' +
+      'ng-disabled="ngDisabled" ' +
+      'ng-focus="onFocus()" ' +
+      'ng-model="ngModel" ' +
+      '></textarea>';
+  }
+
+  // update template
+  template += '<label>{{label}}</label></div>';
+
+  // directive function
+  return ['$timeout', function($timeout) {
     return {
       restrict: 'AE',
-      require: ['?ngModel', '^?form'],
-      scope: scope,
+      require: ['ngModel'],
+      scope: scopeArgs,
       replace: true,
-      template: '<div class="mui-textfield" ng-class=\'{"mui-textfield--float-label" : floatingLabel}\'>' +
-        '<input ng-model="innerInput" ng-change="onChange()" placeholder={{hint}} type={{type}} />' +
-        '<label>{{floatingLabel || label}}</label>' +
-        '</div>',
+      template: template,
+      link: function(scope, element, attrs, controllers) {
+        var inputEl = element.find('input') || element.find('textarea'),
+            labelEl = element.find('label'),
+            ngModelCtrl = controllers[0],
+            formCtrl = controllers[1],
+            isUndef = angular.isUndefined,
+            el = inputEl[0];
 
-      link: function(scope, element, attrs, ctrls) {
+        // disable MUI js
+        if (el) el._muiTextfield = true;
 
-        var $input = element.find('input'),
-          $label = element.find('label'),
-          emptyClass = 'mui--is-empty',
-          notEmptyClass = 'mui--is-not-empty',
-          dirtyClass = 'mui--is-dirty',
-          ngModelCtrl = ctrls[0],
-          formCtrl = ctrls[1],
-          autofocus = !angular.isUndefined(attrs.autofocus),
-          input;
+        // remove attributes from wrapper
+        element.removeAttr('ng-change');
+        element.removeAttr('ng-model');
 
-        /**
-         * init
-         */
-        scope.type = scope.type || (isTextArea ? 'textarea' : 'text');
-        scope.rows = scope.rows || 2;
-        if (scope.type === 'textarea') {
-          $input.remove();
-          $input = angular.element('<textarea ng-model="innerInput" ng-change="onChange()" ' +
-            'placeholder={{hint}} rows={{rows}}></textarea>');
-          element.prepend($compile($input)(scope));
-        }
-        autofocus && $input[0].focus();
-        scope.innerInput ? $input.addClass(notEmptyClass) : $input.addClass(emptyClass);
-        if (attrs.required) {
-          $input.prop('required', true);
-        }
-        if (scope.floatingLabel) {
+        // scope defaults
+        if (!isTextArea) scope.type = scope.type || 'text';
+        else scope.rows = scope.rows || 2;
+        
+        // autofocus
+        if (!isUndef(attrs.autofocus)) inputEl[0].focus();
+
+        // required
+        if (!isUndef(attrs.required)) inputEl.prop('required', true);
+
+        // invalid
+        if (!isUndef(attrs.invalid)) inputEl.addClass('mui--is-invalid');
+
+        // set is-empty|is-no-empty
+        handleEmptyClasses(inputEl, scope.ngModel);
+
+        // float-label
+        if (!isUndef(scope.floatLabel)) {
+          element.addClass('mui-textfield--float-label');
+
           $timeout(function() {
-            $label.css({
+            labelEl.css({
               'transition': '.15s ease-out',
               '-webkit-transition': '.15s ease-out',
               '-moz-transition': '.15s ease-out',
               '-o-transition': '.15s ease-out',
               '-ms-transition': '.15s ease-out',
             })
-          },150);
+          }, 150);
         }
-        $input.on('focus', function() {
-          $input.addClass(dirtyClass);
-        })
-        $input.on('input',function() {
-          var inputValue = $input.val();
-          if (inputValue) {
-            $input.attr('value', inputValue)
-            $input.removeClass(emptyClass).addClass(notEmptyClass);
-          } else {
-            $input.removeAttr('value')
-            $input.removeClass(notEmptyClass).addClass(emptyClass);
-          }
-        });
+        
+        // handle changes
+        scope.onChange = function() {
+          var val = scope.ngModel;
 
-        if (!ngModelCtrl) {
-          throw new Error('ngModel not found inside of muiInput/muiTextarea tag!');
+          // trigger ng-change
+          if (ngModelCtrl) ngModelCtrl.$setViewValue(val);
+          
+          // set is-empty|is-no-empty
+          handleEmptyClasses(inputEl, val);
+          
+          // add is-dirty
+          inputEl.addClass(dirtyClass);
         }
 
-        if (!formCtrl) {
-          throw new Error('muiInput/muiTextarea must be placed inside of a form tag!');
+        // handle focus event
+        scope.onFocus = function() {
+          inputEl.addClass(dirtyClass);
         }
-
-        /**
-         * 当指令的model发生变化时触发change事件
-         */
-        ngModelCtrl.$render = function() {
-          scope.innerInput !== undefined && scope.ngChange && scope.ngChange();
-        }
-
-        /**
-         * 表单验证以及样式处理
-         */
-        scope.$watch('innerInput', function() {
-          input = formCtrl[element.attr('name')];
-          input.$valid ? $input.removeClass('mui--is-invalid') : $input.addClass('mui--is-invalid');
-        });
-
       }
     };
   }];
 }
-module.exports = angular.module('mui.input', [])
+
+
+angular.module(moduleName, [])
   .directive('muiInput', inputFactory(false))
   .directive('muiTextarea', inputFactory(true));
+
+
+/** Define module API */
+export default moduleName;

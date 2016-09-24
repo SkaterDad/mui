@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
     <!-- for example only -->
-    <script src="../assets/vendor/angular/1.4.8/angular.js"></script>
+    <script src="../assets/vendor/angular/1.5.3/angular.js"></script>
     <!-- end -->
 
     <link rel="stylesheet" type="text/css" href="../assets/mui/css/mui.css"/>
@@ -17,33 +17,52 @@
       <h1>Dropdowns</h1>
       <mui-panel>
         <h3>Dropdown Left</h3>
-        <mui-dropdown  color="danger" open='true' label='dropdown <em>EM</em>' >
+        <mui-dropdown
+            label='dropdown <em>EM</em>'
+            color="danger"
+            open
+        >
           <mui-dropdown-item link="#/login">Login</mui-dropdown-item>
-          <mui-dropdown-item >Option 2</mui-dropdown-item>
+          <mui-dropdown-item>Option 2</mui-dropdown-item>
           <mui-dropdown-item link="#">Option 3</mui-dropdown-item>
         </mui-dropdown>
 
-        <mui-dropdown color="danger" label='dropdown' disabled>
+        <mui-dropdown
+            color="danger"
+            label="dropdown"
+            disabled
+        >
           <mui-dropdown-item link="#">Option 1</mui-dropdown-item>
           <mui-dropdown-item link="#">Option 2</mui-dropdown-item>
           <mui-dropdown-item link="#">Option 3</mui-dropdown-item>
           <mui-dropdown-item link="#">Option 4</mui-dropdown-item>
         </mui-dropdown>
 
-        <mui-dropdown  variant="fab" size='large' color="primary" nocaret right label='R' >
+        <mui-dropdown
+            label="R"
+            variant="fab"
+            size="large"
+            color="primary"
+            no-caret
+            right-align
+        >
           <mui-dropdown-item link="#">Option 1</mui-dropdown-item>
           <mui-dropdown-item link="#">Option 2</mui-dropdown-item>
           <mui-dropdown-item link="#">Option 3</mui-dropdown-item>
           <mui-dropdown-item link="#">Option 4</mui-dropdown-item>
         </mui-dropdown>
 
-        <mui-dropdown  variant="fab" size='small' nocaret   label="<i class='fa fa-cogs'></i>" >
+        <mui-dropdown
+            label="<i class='fa fa-cogs'></i>"
+            variant="fab"
+            size='small'
+            no-caret
+        >
           <mui-dropdown-item link="#">Option 1</mui-dropdown-item>
           <mui-dropdown-item link="#">Option 2</mui-dropdown-item>
           <mui-dropdown-item link="#">Option 3</mui-dropdown-item>
           <mui-dropdown-item link="#">Option 4</mui-dropdown-item>
         </mui-dropdown>
-
       </mui-panel>
     </mui-container>
   </body>

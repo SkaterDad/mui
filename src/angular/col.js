@@ -1,4 +1,15 @@
-module.exports = angular.module('mui.col', [])
+/**
+ * MUI Angular Col (Grid) Component
+ * @module angular/col
+ */
+
+import angular from 'angular';
+
+
+const moduleName = 'mui.col';
+
+
+angular.module(moduleName, [])
   .directive('muiCol', function() {
     return {
       restrict: 'AE',
@@ -6,10 +17,13 @@ module.exports = angular.module('mui.col', [])
       replace: true,
       template: '<div></div>',
       transclude: true,
-      link: function(scope, element, attrs, controller, linker) {
-        linker(scope, function(clone) {
+      link: function(scope, element, attrs, controller, transcludeFn) {
+        // use transcludeFn to pass ng-controller on parent element
+        transcludeFn(scope, function(clone) {
           element.append(clone);
         });
+
+        // iterate through breakpoints
         var breakpoints = {
           'xs': 'mui-col-xs-',
           'sm': 'mui-col-sm-',
@@ -20,10 +34,15 @@ module.exports = angular.module('mui.col', [])
           'md-offset': 'mui-col-md-offset-',
           'lg-offset': 'mui-col-lg-offset-'
         };
+
         angular.forEach(breakpoints, function(value, key) {
-          var temp = attrs[attrs.$normalize(key)];
-          temp && element.addClass(value + temp);
+          var attrVal = attrs[attrs.$normalize(key)];
+          if (attrVal) element.addClass(value + attrVal);
         })
       }
     }
-  })
+  });
+
+
+/** Define module API */
+export default moduleName;

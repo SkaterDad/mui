@@ -52,7 +52,6 @@ describe('react/select', function() {
     let wrapperEl = instance.refs.wrapperEl;
 
     // check that select element is only child
-    assert.equal(wrapperEl.children.length, 1);
     assert.equal(wrapperEl.children[0].tagName, 'SELECT');
   });
 
@@ -63,9 +62,9 @@ describe('react/select', function() {
     let selectEl = instance.refs.selectEl;
 
     // check before and after click
-    assert.equal(wrapperEl.children.length, 1);
+    let numBefore = wrapperEl.children.length;
     ReactUtils.Simulate.click(selectEl, {button: 0});
-    assert.equal(wrapperEl.children.length, 2);
+    assert.equal(wrapperEl.children.length, numBefore + 1);
   });
 
 
@@ -88,6 +87,31 @@ describe('react/select', function() {
     );
 
     assert.equal(result.props.style.additonal, 'style');
+  });
+
+
+  it('renders menu items with additional classNames', function() {
+    let instance = ReactUtils.renderIntoDocument(
+      <Select>
+        <Option />
+        <Option className="my-custom-class" />
+      </Select>
+    );
+
+    let selectEl = instance.refs.selectEl;
+
+    // check option element custom class
+    let optionEl = selectEl.children[1];
+    assert.equal(optionEl.className, 'my-custom-class');
+
+    // open menu
+    ReactUtils.Simulate.click(selectEl, {button: 0});
+
+    // check menu item custom class
+    let findComponentFn = ReactUtils.findRenderedDOMComponentWithClass;
+    let menuEl = findComponentFn(instance, 'mui-select__menu');
+    let itemEl = menuEl.children[1];
+    assert.equal(itemEl.className, 'my-custom-class');
   });
 
 
@@ -148,7 +172,6 @@ describe('react/select', function() {
           <Select
             ref="refEl"
             value={this.state.value}
-            defaultValue="ignored value"
             onChange={this.onChange}
           >
             <Option value="option-1" />

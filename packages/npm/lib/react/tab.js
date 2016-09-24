@@ -28,7 +28,7 @@ var Tab = function (_React$Component) {
 
   function Tab() {
     babelHelpers.classCallCheck(this, Tab);
-    return babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Tab).apply(this, arguments));
+    return babelHelpers.possibleConstructorReturn(this, (Tab.__proto__ || Object.getPrototypeOf(Tab)).apply(this, arguments));
   }
 
   babelHelpers.createClass(Tab, [{
@@ -41,6 +41,7 @@ var Tab = function (_React$Component) {
 }(_react2.default.Component);
 
 /** Define module API */
+
 
 Tab.propTypes = {
   value: PropTypes.any,

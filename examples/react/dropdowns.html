@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- for example only -->   
-    <script src="../assets/vendor/react/0.14.6/react.js"></script>
-    <script src="../assets/vendor/react/0.14.6/react-dom.js"></script>
+    <script src="../assets/vendor/react/15.2.1/react.js"></script>
+    <script src="../assets/vendor/react/15.2.1/react-dom.js"></script>
     <script src="../assets/vendor/babel-core/5.8.23/browser.min.js"></script>
     <!-- end -->
 
@@ -30,13 +30,15 @@
             <Dropdown
                 color="primary"
                 label="Dropdown"
-                onClick={function(ref, ev) {console.log('option selected')}}
-            >
-              <DropdownItem link="#/link1">Option 1</DropdownItem>
-              <DropdownItem>Option 2</DropdownItem>
-              <DropdownItem>Option 3</DropdownItem>
+                onClick={function() {console.log('toggle clicked')}}
+                onSelect={function(val) {console.log(val);}}
+             >
+              <DropdownItem value="a" link="#/link1">Option 1</DropdownItem>
+              <DropdownItem value="b" target="_blank">Option 2</DropdownItem>
+              <DropdownItem value="c">Option 3</DropdownItem>
               <DropdownItem 
-                  onClick={function (ref, ev){alert("Option 4 selected");}}
+                  value="d"
+                  onClick={function() {alert("Option 4 selected");}}
               >
                 Option 4
               </DropdownItem>
@@ -63,11 +65,31 @@
       }
 
 
+      class DropdownExample3 extends React.Component {
+        render() {
+          let labelEl = <i>test</i>;
+
+          return (
+            <Dropdown 
+                color="primary"
+                alignMenu="right"
+                label={labelEl}>
+              <DropdownItem>Option 1</DropdownItem>
+              <DropdownItem>Option 2</DropdownItem>
+              <DropdownItem>Option 3</DropdownItem>
+              <DropdownItem>Option 4</DropdownItem>
+            </Dropdown>
+          );
+        }
+      }
+
+
       ReactDOM.render(
         <div className="mui-panel">
           <h2>React</h2>
           <DropdownExample1 />
           <DropdownExample2 />
+          <DropdownExample3 />
         </div>,
         document.getElementById('dropdowns')
       );
